@@ -10,65 +10,69 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_NeoPixel.h>
 
-// Matrix layout parameters are passed in the 16-bit 'type' parameter for
-// each constructor.  The low-order byte contains NeoPixel-specific data
-// from the NeoPixel library (e.g. NEO_GRB or NEO_KHZ800), the high-order
-// byte contains NeoMatrix data defined here (matrix layout, etc.).  Add
-// the two to produce a final type value for the constructor.
+// Matrix layout information is passed in the 'matrixType' parameter for
+// each constructor (the parameter immediately following is the LED type
+// from NeoPixel.h).
 
 // These define the layout for a single 'unified' matrix (e.g. one made
 // from NeoPixel strips, or a single NeoPixel shield), or for the pixels
 // within each matrix of a tiled display (e.g. multiple NeoPixel shields).
 
-#define NEO_MATRIX_TOP         0x0000 // Pixel 0 is at top of matrix
-#define NEO_MATRIX_BOTTOM      0x0100 // Pixel 0 is at bottom of matrix
-#define NEO_MATRIX_LEFT        0x0000 // Pixel 0 is at left of matrix
-#define NEO_MATRIX_RIGHT       0x0200 // Pixel 0 is at right of matrix
-#define NEO_MATRIX_CORNER      0x0300 // Bitmask for pixel 0 matrix corner
-#define NEO_MATRIX_ROWS        0x0000 // Matrix is row major (horizontal)
-#define NEO_MATRIX_COLUMNS     0x0400 // Matrix is column major (vertical)
-#define NEO_MATRIX_AXIS        0x0400 // Bitmask for row/column layout
-#define NEO_MATRIX_PROGRESSIVE 0x0000 // Same pixel order across each line
-#define NEO_MATRIX_ZIGZAG      0x0800 // Pixel order reverses between lines
-#define NEO_MATRIX_SEQUENCE    0x0800 // Bitmask for pixel line order
+#define NEO_MATRIX_TOP         0x00 // Pixel 0 is at top of matrix
+#define NEO_MATRIX_BOTTOM      0x01 // Pixel 0 is at bottom of matrix
+#define NEO_MATRIX_LEFT        0x00 // Pixel 0 is at left of matrix
+#define NEO_MATRIX_RIGHT       0x02 // Pixel 0 is at right of matrix
+#define NEO_MATRIX_CORNER      0x03 // Bitmask for pixel 0 matrix corner
+#define NEO_MATRIX_ROWS        0x00 // Matrix is row major (horizontal)
+#define NEO_MATRIX_COLUMNS     0x04 // Matrix is column major (vertical)
+#define NEO_MATRIX_AXIS        0x04 // Bitmask for row/column layout
+#define NEO_MATRIX_PROGRESSIVE 0x00 // Same pixel order across each line
+#define NEO_MATRIX_ZIGZAG      0x08 // Pixel order reverses between lines
+#define NEO_MATRIX_SEQUENCE    0x08 // Bitmask for pixel line order
 
 // These apply only to tiled displays (multiple matrices):
 
-#define NEO_TILE_TOP           0x0000 // First tile is at top of matrix
-#define NEO_TILE_BOTTOM        0x1000 // First tile is at bottom of matrix
-#define NEO_TILE_LEFT          0x0000 // First tile is at left of matrix
-#define NEO_TILE_RIGHT         0x2000 // First tile is at right of matrix
-#define NEO_TILE_CORNER        0x3000 // Bitmask for first tile corner
-#define NEO_TILE_ROWS          0x0000 // Tiles ordered in rows
-#define NEO_TILE_COLUMNS       0x4000 // Tiles ordered in columns
-#define NEO_TILE_AXIS          0x4000 // Bitmask for tile H/V orientation
-#define NEO_TILE_PROGRESSIVE   0x0000 // Same tile order across each line
-#define NEO_TILE_ZIGZAG        0x8000 // Tile order reverses between lines
-#define NEO_TILE_SEQUENCE      0x8000 // Bitmas for tile line order
+#define NEO_TILE_TOP           0x00 // First tile is at top of matrix
+#define NEO_TILE_BOTTOM        0x10 // First tile is at bottom of matrix
+#define NEO_TILE_LEFT          0x00 // First tile is at left of matrix
+#define NEO_TILE_RIGHT         0x20 // First tile is at right of matrix
+#define NEO_TILE_CORNER        0x30 // Bitmask for first tile corner
+#define NEO_TILE_ROWS          0x00 // Tiles ordered in rows
+#define NEO_TILE_COLUMNS       0x40 // Tiles ordered in columns
+#define NEO_TILE_AXIS          0x40 // Bitmask for tile H/V orientation
+#define NEO_TILE_PROGRESSIVE   0x00 // Same tile order across each line
+#define NEO_TILE_ZIGZAG        0x80 // Tile order reverses between lines
+#define NEO_TILE_SEQUENCE      0x80 // Bitmas for tile line order
 
 class Adafruit_NeoMatrix : public Adafruit_GFX, public Adafruit_NeoPixel {
 
  public:
 
   // Constructor for single matrix:
-  Adafruit_NeoMatrix(int w, int h, uint8_t pin=6, uint16_t type=
-    NEO_MATRIX_TOP + NEO_MATRIX_LEFT + NEO_MATRIX_ROWS + NEO_GRB + NEO_KHZ800);
+  Adafruit_NeoMatrix(int w, int h, uint8_t pin = 6,
+    uint8_t matrixType = NEO_MATRIX_TOP + NEO_MATRIX_LEFT + NEO_MATRIX_ROWS,
+    uint8_t ledType    = NEO_GRB + NEO_KHZ800);
 
   // Constructor for tiled matrices:
-  Adafruit_NeoMatrix(uint8_t matrixW, uint8_t matrixH, uint8_t tilesX,
-    uint8_t tilesY, uint8_t pin=6, uint16_t type=NEO_MATRIX_TOP +
-    NEO_MATRIX_LEFT + NEO_MATRIX_ROWS + NEO_TILE_TOP + NEO_TILE_LEFT +
-    NEO_TILE_ROWS + NEO_GRB + NEO_KHZ800);
+  Adafruit_NeoMatrix(uint8_t matrixW, uint8_t matrixH, uint8_t tX,
+    uint8_t tY, uint8_t pin = 6,
+    uint8_t matrixType = NEO_MATRIX_TOP + NEO_MATRIX_LEFT + NEO_MATRIX_ROWS +
+                         NEO_TILE_TOP + NEO_TILE_LEFT + NEO_TILE_ROWS,
+    uint8_t ledType    = NEO_GRB + NEO_KHZ800);
 
   void
-    drawPixel(int16_t x, int16_t y, uint16_t color);
+    drawPixel(int16_t x, int16_t y, uint16_t color),
+    fillScreen(uint16_t color),
+    setRemapFunction(uint16_t (*fn)(uint16_t, uint16_t));
 
  private:
 
-  uint16_t type,
-           (*remapFn)(uint16_t x, uint16_t y);
-  boolean  tiled;
-  uint8_t  matrixWidth, matrixHeight, tileX, tileY;
+  const uint8_t
+    type;
+  const uint8_t
+    matrixWidth, matrixHeight, tilesX, tilesY;
+  uint16_t
+    (*remapFn)(uint16_t x, uint16_t y);
 
 #ifdef SLARTIBARTFAST
 

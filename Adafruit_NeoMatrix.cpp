@@ -8,25 +8,26 @@
 #endif
 
 // Constructor for single matrix:
-Adafruit_NeoMatrix::Adafruit_NeoMatrix(int w, int h, uint8_t pin, uint16_t t) : Adafruit_GFX(w, h), Adafruit_NeoPixel(w * h, pin, t) {
-  type  = t;
-  tiled = false;
-}
+Adafruit_NeoMatrix::Adafruit_NeoMatrix(int w, int h, uint8_t pin,
+  uint8_t matrixType, uint8_t ledType) : Adafruit_GFX(w, h),
+  Adafruit_NeoPixel(w * h, pin, ledType), type(matrixType), matrixWidth(w),
+  matrixHeight(h), tilesX(0), tilesY(0), remapFn(NULL) { }
 
 // Constructor for tiled matrices:
 Adafruit_NeoMatrix::Adafruit_NeoMatrix(uint8_t mW, uint8_t mH, uint8_t tX,
-  uint8_t tY, uint8_t pin, uint16_t t) : Adafruit_GFX(mW * tX, mH * tY),
-  Adafruit_NeoPixel(mW * mH * tX * tY, pin, t) {
-  type         = t;
-  tiled        = true;
-  matrixWidth  = mW;
-  matrixHeight = mH;
-  tileX        = tX;
-  tileY        = tY;
-  remapFn      = NULL;
+  uint8_t tY, uint8_t pin, uint8_t matrixType, uint8_t ledType) :
+  Adafruit_GFX(mW * tX, mH * tY), Adafruit_NeoPixel(mW * mH * tX * tY, pin,
+  ledType), type(matrixType), matrixWidth(mW), matrixHeight(mH), tilesX(tX),
+  tilesY(tY), remapFn(NULL) { }
+
+// Expand 16-bit input color to 24-bit colorspace
+static uint32_t expandColor(uint16_t color) {
+  return (pgm_read_byte(&gamma5[ color >> 11       ]) << 16) |
+         (pgm_read_byte(&gamma6[(color >> 5) & 0x3F]) <<  8) |
+          pgm_read_byte(&gamma5[ color       & 0x1F]);
 }
 
-void Adafruit_NeoMatrix::drawPixel(int16_t x, int16_t y, uint16_t c) {
+void Adafruit_NeoMatrix::drawPixel(int16_t x, int16_t y, uint16_t color) {
 
   if((x < 0) || (y < 0) || (x >= _width) || (y >= _height)) return;
 
@@ -48,18 +49,13 @@ void Adafruit_NeoMatrix::drawPixel(int16_t x, int16_t y, uint16_t c) {
     break;
   }
 
-  uint8_t r, g, b;
-  int     i;
-  // rrrrrggggggbbbbb
-  r = pgm_read_byte(&gamma5[c >> 11]);
-  g = pgm_read_byte(&gamma6[((c >> 5) & 0x3F)]);
-  b = pgm_read_byte(&gamma5[(c & 0x1F)]);
+  int i;
 
   if(remapFn) {
     // Custom remapping function
     i = (*remapFn)(x, y);
   } else {
-    if(tiled) {
+    if(tilesX) {
       // Determine tile number
       if((type & NEO_TILE_AXIS) == NEO_TILE_ROWS) {
         // Tile order is row major
@@ -84,5 +80,18 @@ void Adafruit_NeoMatrix::drawPixel(int16_t x, int16_t y, uint16_t c) {
     }
   }
 
-  setPixelColor(i, r, g, b);
+  setPixelColor(i, expandColor(color));
+}
+
+void Adafruit_NeoMatrix::fillScreen(uint16_t color) {
+  uint16_t i, n;
+  uint32_t c24;
+
+  c24 = expandColor(color);
+  n   = numPixels();
+  for(i=0; i<n; i++) setPixelColor(i, c24);
+}
+
+void Adafruit_NeoMatrix::setRemapFunction(uint16_t (*fn)(uint16_t, uint16_t)) {
+  remapFn = fn;
 }

@@ -1,18 +1,20 @@
-#include <Adafruit_NeoPixel.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_NeoMatrix.h>
+#include <Adafruit_NeoPixel.h>
 
 #define PIN 6
 
 Adafruit_NeoMatrix matrix = Adafruit_NeoMatrix(8, 5, PIN,
-  NEO_MATRIX_TOP | NEO_MATRIX_LEFT | NEO_MATRIX_ROWS | NEO_MATRIX_PROGRESSIVE +
+  NEO_MATRIX_TOP + NEO_MATRIX_LEFT + NEO_MATRIX_ROWS + NEO_MATRIX_PROGRESSIVE,
   NEO_GRB + NEO_KHZ800);
 
 void setup() {
+  Serial.begin(9600);
   matrix.begin();
   matrix.setRotation(3);
   matrix.setTextWrap(false);
-  matrix.setTextColor(0x4000); // Medium red
+//  matrix.setBrightness(40);
+  matrix.setTextColor(0x4000);
 }
 
 int x = 6;
