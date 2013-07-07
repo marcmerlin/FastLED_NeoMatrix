@@ -64,6 +64,8 @@ class Adafruit_NeoMatrix : public Adafruit_GFX, public Adafruit_NeoPixel {
     drawPixel(int16_t x, int16_t y, uint16_t color),
     fillScreen(uint16_t color),
     setRemapFunction(uint16_t (*fn)(uint16_t, uint16_t));
+  static uint16_t
+    Color(uint8_t r, uint8_t g, uint8_t b);
 
  private:
 

@@ -20,11 +20,19 @@ Adafruit_NeoMatrix::Adafruit_NeoMatrix(uint8_t mW, uint8_t mH, uint8_t tX,
   ledType), type(matrixType), matrixWidth(mW), matrixHeight(mH), tilesX(tX),
   tilesY(tY), remapFn(NULL) { }
 
-// Expand 16-bit input color to 24-bit colorspace
+// Expand 16-bit input color (Adafruit_GFX colorspace) to 24-bit (NeoPixel)
+// (w/gamma adjustment)
 static uint32_t expandColor(uint16_t color) {
-  return (pgm_read_byte(&gamma5[ color >> 11       ]) << 16) |
-         (pgm_read_byte(&gamma6[(color >> 5) & 0x3F]) <<  8) |
-          pgm_read_byte(&gamma5[ color       & 0x1F]);
+  return ((uint32_t)pgm_read_byte(&gamma5[ color >> 11       ]) << 16) |
+         ((uint32_t)pgm_read_byte(&gamma6[(color >> 5) & 0x3F]) <<  8) |
+                    pgm_read_byte(&gamma5[ color       & 0x1F]);
+}
+
+// Downgrade 24-bit color to 16-bit (add reverse gamma lookup here?)
+uint16_t Adafruit_NeoMatrix::Color(uint8_t r, uint8_t g, uint8_t b) {
+  return ((uint16_t)(r & 0x1f) << 11) |
+         ((uint16_t)(g & 0x3f) <<  5) |
+                    (b          >> 3);
 }
 
 void Adafruit_NeoMatrix::drawPixel(int16_t x, int16_t y, uint16_t color) {
@@ -51,8 +59,9 @@ void Adafruit_NeoMatrix::drawPixel(int16_t x, int16_t y, uint16_t color) {
 
   int i;
 
+  // LOTS OF MOJO STILL TO DO HERE
   if(remapFn) {
-    // Custom remapping function
+    // Custom X/Y remapping function
     i = (*remapFn)(x, y);
   } else {
     if(tilesX) {
@@ -95,3 +104,4 @@ void Adafruit_NeoMatrix::fillScreen(uint16_t color) {
 void Adafruit_NeoMatrix::setRemapFunction(uint16_t (*fn)(uint16_t, uint16_t)) {
   remapFn = fn;
 }
+
