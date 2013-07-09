@@ -1,3 +1,21 @@
+/*--------------------------------------------------------------------
+  This file is part of the Adafruit NeoMatrix library.
+
+  NeoMatrix is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Lesser General Public License as
+  published by the Free Software Foundation, either version 3 of
+  the License, or (at your option) any later version.
+
+  NeoMatrix is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public
+  License along with NeoMatrix.  If not, see
+  <http://www.gnu.org/licenses/>.
+  --------------------------------------------------------------------*/
+
 #ifndef _ADAFRUIT_NEOMATRIX_H_
 #define _ADAFRUIT_NEOMATRIX_H_
 
@@ -76,20 +94,6 @@ class Adafruit_NeoMatrix : public Adafruit_GFX, public Adafruit_NeoPixel {
   uint16_t
     (*remapFn)(uint16_t x, uint16_t y);
 
-#ifdef SLARTIBARTFAST
-
-  // Stuff not yet implemented
-  void
-    fillScreen(uint16_t c),
-    dumpMatrix(void);
-  uint16_t
-    Color888(uint8_t r, uint8_t g, uint8_t b),
-    Color888(uint8_t r, uint8_t g, uint8_t b, boolean gflag),
-    ColorHSV(long hue, uint8_t sat, uint8_t val, boolean gflag);
-
- private:
-
-#endif
 };
 
 #endif // _ADAFRUIT_NEOMATRIX_H_

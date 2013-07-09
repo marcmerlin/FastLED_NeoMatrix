@@ -1,3 +1,34 @@
+/*-------------------------------------------------------------------------
+  Arduino library to control single and tiled matrices of WS2811- and
+  WS2812-based RGB LED devices such as the Adafruit NeoPixel Shield or
+  displays assembled from NeoPixel strips, making them compatible with
+  the Adafruit_GFX graphics library.  Requires both the Adafruit_NeoPixel
+  and Adafruit_GFX libraries.
+
+  Written by Phil Burgess / Paint Your Dragon for Adafruit Industries.
+
+  Adafruit invests time and resources providing this open source code,
+  please support Adafruit and open-source hardware by purchasing products
+  from Adafruit!
+
+  -------------------------------------------------------------------------
+  This file is part of the Adafruit NeoMatrix library.
+
+  NeoMatrix is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Lesser General Public License as
+  published by the Free Software Foundation, either version 3 of
+  the License, or (at your option) any later version.
+
+  NeoMatrix is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public
+  License along with NeoMatrix.  If not, see
+  <http://www.gnu.org/licenses/>.
+  -------------------------------------------------------------------------*/
+
 #include <Adafruit_NeoPixel.h>
 #include <Adafruit_NeoMatrix.h>
 #include "gamma.h"
@@ -57,39 +88,80 @@ void Adafruit_NeoMatrix::drawPixel(int16_t x, int16_t y, uint16_t color) {
     break;
   }
 
-  int i;
+  int tileOffset = 0, pixelOffset;
 
-  // LOTS OF MOJO STILL TO DO HERE
-  if(remapFn) {
-    // Custom X/Y remapping function
-    i = (*remapFn)(x, y);
-  } else {
-    if(tilesX) {
-      // Determine tile number
+  if(remapFn) { // Custom X/Y remapping function
+    pixelOffset = (*remapFn)(x, y);
+  } else {      // Standard single matrix or tiled matrices
+
+    uint8_t  corner = type & NEO_MATRIX_CORNER;
+    uint16_t minor, major, majorScale;
+
+    if(tilesX) { // Tiled display, multiple matrices
+      uint16_t tile;
+
+      minor = x / WIDTH;            // Tile # X/Y -- presume row major to
+      major = y / HEIGHT,           // start (will swap later if needed)
+      x     = x - (minor * WIDTH);  // Pixel X/Y within tile
+      y     = y - (major * HEIGHT); // (-* is less math than modulo)
+
+      // Determine corner of entry, flip axes if needed
+      if(type & NEO_TILE_RIGHT)  minor = tilesX - 1 - minor;
+      if(type & NEO_TILE_BOTTOM) major = tilesY - 1 - major;
+
+      // Determine actual major axis of tiling
       if((type & NEO_TILE_AXIS) == NEO_TILE_ROWS) {
-        // Tile order is row major
+        majorScale = tilesX;
       } else {
-        // Tile order is column major
+        swap(major, minor);
+        majorScale = tilesY;
       }
+
+      // Determine tile number
+      if((type & NEO_TILE_SEQUENCE) == NEO_TILE_PROGRESSIVE) {
+        // All tiles in same order
+        tile = major * majorScale + minor;
+      } else {
+        // Zigzag; alternate rows change direction.  This also flips
+        // the starting corner of the matrix for the pixel math later.
+        corner ^= NEO_MATRIX_CORNER;
+        if(major & 1) tile = (major + 1) * majorScale - 1 - minor;
+        else          tile =  major      * majorScale     + minor;
+      }
+
+      // Index of first pixel in tile
+      tileOffset = tile * matrixWidth * matrixHeight;
+
+    } // else no tiling (handle as single tile)
+
+    // Find pixel number within tile
+    minor = x; // Presume row major to start (will swap later if needed)
+    major = y;
+
+    // Determine corner of entry, flip axes if needed
+    if(corner & NEO_MATRIX_RIGHT)  minor = matrixWidth  - 1 - minor;
+    if(corner & NEO_MATRIX_BOTTOM) major = matrixHeight - 1 - major;
+
+    // Determine actual major axis of matrix
+    if((type & NEO_MATRIX_AXIS) == NEO_MATRIX_ROWS) {
+      majorScale = matrixWidth;
     } else {
-      // No tiling -- simpler math
-      if((type & NEO_MATRIX_AXIS) == NEO_MATRIX_ROWS) {
-        // Row major
-        if((type & NEO_MATRIX_SEQUENCE) == NEO_MATRIX_PROGRESSIVE) {
-          // All rows in same order
-          i = y * WIDTH + x;
-        } else {
-          // Zigzag; alternate rows switch direction
-          if(y & 1) i = y * WIDTH + WIDTH - 1 - x; // Odd row
-          else      i = y * WIDTH + x;             // Even row
-        }
-      } else {
-        // Column major
-      }
+      swap(major, minor);
+      majorScale = matrixHeight;
+    }
+
+    // Determine pixel number within tile/matrix
+    if((type & NEO_MATRIX_SEQUENCE) == NEO_MATRIX_PROGRESSIVE) {
+      // All lines in same order
+      pixelOffset = major * majorScale + minor;
+    } else {
+      // Zigzag; alternate rows change direction.
+      if(major & 1) pixelOffset = (major + 1) * majorScale - 1 - minor;
+      else          pixelOffset =  major      * majorScale     + minor;
     }
   }
 
-  setPixelColor(i, expandColor(color));
+  setPixelColor(tileOffset + pixelOffset, expandColor(color));
 }
 
 void Adafruit_NeoMatrix::fillScreen(uint16_t color) {
@@ -104,4 +176,3 @@ void Adafruit_NeoMatrix::fillScreen(uint16_t color) {
 void Adafruit_NeoMatrix::setRemapFunction(uint16_t (*fn)(uint16_t, uint16_t)) {
   remapFn = fn;
 }
-
