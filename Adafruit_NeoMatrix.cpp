@@ -122,11 +122,15 @@ void Adafruit_NeoMatrix::drawPixel(int16_t x, int16_t y, uint16_t color) {
         // All tiles in same order
         tile = major * majorScale + minor;
       } else {
-        // Zigzag; alternate rows change direction.  This also flips
-        // the starting corner of the matrix for the pixel math later.
-        corner ^= NEO_MATRIX_CORNER;
-        if(major & 1) tile = (major + 1) * majorScale - 1 - minor;
-        else          tile =  major      * majorScale     + minor;
+        // Zigzag; alternate rows change direction.  On these rows,
+        // this also flips the starting corner of the matrix for the
+        // pixel math later.
+        if(major & 1) {
+          corner ^= NEO_MATRIX_CORNER;
+          tile = (major + 1) * majorScale - 1 - minor;
+        } else {
+          tile =  major      * majorScale     + minor;
+        }
       }
 
       // Index of first pixel in tile
