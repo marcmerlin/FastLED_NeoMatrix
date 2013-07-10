@@ -9,9 +9,11 @@
 
 #define PIN 6
 
-// Three 10x8 matrices, tiled horizontally, each w/zigzag rows
+// Three 10x8 matrices, tiled horizontally left-to-right in same
+// orientation, each w/zigzag rows
 Adafruit_NeoMatrix matrix = Adafruit_NeoMatrix(10, 8, 3, 1, PIN,
-  NEO_MATRIX_TOP + NEO_MATRIX_LEFT + NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG,
+  NEO_TILE_TOP   + NEO_TILE_LEFT   + NEO_TILE_COLUMNS + NEO_TILE_PROGRESSIVE +
+  NEO_MATRIX_TOP + NEO_MATRIX_LEFT + NEO_MATRIX_ROWS  + NEO_MATRIX_ZIGZAG,
   NEO_GRB + NEO_KHZ800);
 
 const uint16_t colors[] = {
