@@ -100,10 +100,10 @@ void Adafruit_NeoMatrix::drawPixel(int16_t x, int16_t y, uint16_t color) {
     if(tilesX) { // Tiled display, multiple matrices
       uint16_t tile;
 
-      minor = x / WIDTH;            // Tile # X/Y -- presume row major to
-      major = y / HEIGHT,           // start (will swap later if needed)
-      x     = x - (minor * WIDTH);  // Pixel X/Y within tile
-      y     = y - (major * HEIGHT); // (-* is less math than modulo)
+      minor = x / matrixWidth;            // Tile # X/Y; presume row major to
+      major = y / matrixHeight,           // start (will swap later if needed)
+      x     = x - (minor * matrixWidth);  // Pixel X/Y within tile
+      y     = y - (major * matrixHeight); // (-* is less math than modulo)
 
       // Determine corner of entry, flip axes if needed
       if(type & NEO_TILE_RIGHT)  minor = tilesX - 1 - minor;

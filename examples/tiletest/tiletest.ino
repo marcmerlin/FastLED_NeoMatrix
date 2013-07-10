@@ -1,4 +1,4 @@
-// Adafruit_NeoMatrix example for single NeoPixel Shield.
+// Adafruit_NeoMatrix example for 3X 10x8 NeoPixel grids.
 
 #include <Adafruit_GFX.h>
 #include <Adafruit_NeoMatrix.h>
@@ -9,13 +9,9 @@
 
 #define PIN 6
 
-// Regard NeoPixel shield as a tall matrix with the USB port at
-// the top of the Arduino.  In this position, at the default
-// rotation, it's a single 5x8 matrix, first pixel at the top
-// right, column-major layout with progressive (not zig-zag)
-// pixel order.
-Adafruit_NeoMatrix matrix = Adafruit_NeoMatrix(5, 8, PIN,
-  NEO_MATRIX_TOP + NEO_MATRIX_RIGHT + NEO_MATRIX_COLUMNS + NEO_MATRIX_PROGRESSIVE,
+// Three 10x8 matrices, tiled horizontally, each w/zigzag rows
+Adafruit_NeoMatrix matrix = Adafruit_NeoMatrix(10, 8, 3, 1, PIN,
+  NEO_MATRIX_TOP + NEO_MATRIX_LEFT + NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG,
   NEO_GRB + NEO_KHZ800);
 
 const uint16_t colors[] = {
