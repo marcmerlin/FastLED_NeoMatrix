@@ -60,7 +60,7 @@
 #define NEO_TILE_AXIS          0x40 // Bitmask for tile H/V orientation
 #define NEO_TILE_PROGRESSIVE   0x00 // Same tile order across each line
 #define NEO_TILE_ZIGZAG        0x80 // Tile order reverses between lines
-#define NEO_TILE_SEQUENCE      0x80 // Bitmas for tile line order
+#define NEO_TILE_SEQUENCE      0x80 // Bitmask for tile line order
 
 class Adafruit_NeoMatrix : public Adafruit_GFX, public Adafruit_NeoPixel {
 

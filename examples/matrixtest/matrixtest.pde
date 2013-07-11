@@ -1,4 +1,5 @@
 // Adafruit_NeoMatrix example for single NeoPixel Shield.
+// Scrolls 'Howdy' across the matrix in a portrait (vertical) orientation.
 
 #include <Adafruit_GFX.h>
 #include <Adafruit_NeoMatrix.h>
@@ -9,20 +10,39 @@
 
 #define PIN 6
 
-// Regard NeoPixel shield as a tall matrix with the USB port at
-// the top of the Arduino.  In this position, at the default
-// rotation, it's a single 5x8 matrix, first pixel at the top
-// right, column-major layout with progressive (not zig-zag)
-// pixel order.
+// MATRIX DECLARATION:
+// Parameter 1 = width of NeoPixel matrix
+// Parameter 2 = height of matrix
+// Parameter 3 = pin number (most are valid)
+// Parameter 4 = matrix layout flags, add together as needed:
+//   NEO_MATRIX_TOP, NEO_MATRIX_BOTTOM, NEO_MATRIX_LEFT, NEO_MATRIX_RIGHT:
+//     Position of the FIRST LED in the matrix; pick two, e.g.
+//     NEO_MATRIX_TOP + NEO_MATRIX_LEFT for the top-left corner.
+//   NEO_MATRIX_ROWS, NEO_MATRIX_COLUMNS: LEDs are arranged in horizontal
+//     rows or in vertical columns, respectively; pick one or the other.
+//   NEO_MATRIX_PROGRESSIVE, NEO_MATRIX_ZIGZAG: all rows/columns proceed
+//     in the same order, or alternate lines reverse direction; pick one.
+//   See example below for these values in action.
+// Parameter 5 = pixel type flags, add together as needed:
+//   NEO_RGB     Pixels are wired for RGB bitstream (v1 pixels)
+//   NEO_GRB     Pixels are wired for GRB bitstream (v2 pixels)
+//   NEO_KHZ400  400 KHz bitstream (e.g. FLORA v1 pixels)
+//   NEO_KHZ800  800 KHz bitstream (e.g. High Density LED strip)
+
+// Example for NeoPixel Shield.  In this application we'd like to use it
+// as a 5x8 tall matrix, with the USB port positioned at the top of the
+// Arduino.  When held that way, the first pixel is at the top right, and
+// lines are arranged in columns, progressive order.  The shield uses
+// 800 KHz (v2) pixels that expect GRB color data.
 Adafruit_NeoMatrix matrix = Adafruit_NeoMatrix(5, 8, PIN,
-  NEO_MATRIX_TOP + NEO_MATRIX_RIGHT + NEO_MATRIX_COLUMNS + NEO_MATRIX_PROGRESSIVE,
-  NEO_GRB + NEO_KHZ800);
+  NEO_MATRIX_TOP     + NEO_MATRIX_RIGHT +
+  NEO_MATRIX_COLUMNS + NEO_MATRIX_PROGRESSIVE,
+  NEO_GRB            + NEO_KHZ800);
 
 const uint16_t colors[] = {
   matrix.Color(255, 0, 0), matrix.Color(0, 255, 0), matrix.Color(0, 0, 255) };
 
 void setup() {
-  Serial.begin(9600);
   matrix.begin();
   matrix.setTextWrap(false);
   matrix.setBrightness(40);
