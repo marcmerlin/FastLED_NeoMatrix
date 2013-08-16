@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define GAMMA 2.8
+#define GAMMA 2.6
 
 int planes = 5;
 
@@ -37,10 +37,10 @@ int main(int argc, char *argv[])
 	  "    ", planes);
 
 	for(i=0; i<=maxval; i++) {
-		(void)printf("0x%02x",
-		  i + (int)(pow((float)i / (float)maxval, GAMMA) *
-		  (float)(255.0 - i) + 0.5));
-		if(i < maxval) (void)printf(((i & 7) == 7) ? ",\n    " : ",");
+		(void)printf("%3d",
+		  (int)(pow((float)i / (float)maxval, GAMMA) *
+		  (float)255.0 + 0.5));
+		if(i < maxval) (void)printf(((i & 15) == 15) ? ",\n    " : ",");
 	}
 
 	(void)puts(
