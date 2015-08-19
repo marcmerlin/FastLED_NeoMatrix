@@ -70,6 +70,27 @@ uint16_t Adafruit_NeoMatrix::Color(uint8_t r, uint8_t g, uint8_t b) {
                     (b         >> 3);
 }
 
+// Pass-through is a kludge that lets you override the current drawing
+// color with a 'raw' RGB (or RGBW) value that's issued directly to
+// pixel(s), side-stepping the 16-bit color limitation of Adafruit_GFX.
+// This is not without some limitations of its own -- for example, it
+// won't work in conjunction with the background color feature when
+// drawing text or bitmaps (you'll just get a solid rect of color),
+// only 'transparent' text/bitmaps.  Also, no gamma correction.
+// Remember to UNSET the passthrough color immediately when done with
+// it (call with no value)!
+
+// Pass raw color value to set/enable passthrough
+void Adafruit_NeoMatrix::setPassThruColor(uint32_t c) {
+  passThruColor = c;
+  passThruFlag  = true;
+}
+
+// Call without a value to reset (disable passthrough)
+void Adafruit_NeoMatrix::setPassThruColor(void) {
+  passThruFlag = false;
+}
+
 void Adafruit_NeoMatrix::drawPixel(int16_t x, int16_t y, uint16_t color) {
 
   if((x < 0) || (y < 0) || (x >= _width) || (y >= _height)) return;
@@ -169,16 +190,17 @@ void Adafruit_NeoMatrix::drawPixel(int16_t x, int16_t y, uint16_t color) {
     }
   }
 
-  setPixelColor(tileOffset + pixelOffset, expandColor(color));
+  setPixelColor(tileOffset + pixelOffset,
+    passThruFlag ? passThruColor : expandColor(color));
 }
 
 void Adafruit_NeoMatrix::fillScreen(uint16_t color) {
   uint16_t i, n;
-  uint32_t c24;
+  uint32_t c;
 
-  c24 = expandColor(color);
-  n   = numPixels();
-  for(i=0; i<n; i++) setPixelColor(i, c24);
+  c = passThruFlag ? passThruColor : expandColor(color);
+  n = numPixels();
+  for(i=0; i<n; i++) setPixelColor(i, c);
 }
 
 void Adafruit_NeoMatrix::setRemapFunction(uint16_t (*fn)(uint16_t, uint16_t)) {
