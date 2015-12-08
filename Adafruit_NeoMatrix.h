@@ -69,14 +69,14 @@ class Adafruit_NeoMatrix : public Adafruit_GFX, public Adafruit_NeoPixel {
   // Constructor for single matrix:
   Adafruit_NeoMatrix(int w, int h, uint8_t pin = 6,
     uint8_t matrixType = NEO_MATRIX_TOP + NEO_MATRIX_LEFT + NEO_MATRIX_ROWS,
-    uint8_t ledType    = NEO_GRB + NEO_KHZ800);
+    neoPixelType ledType = NEO_GRB + NEO_KHZ800);
 
   // Constructor for tiled matrices:
   Adafruit_NeoMatrix(uint8_t matrixW, uint8_t matrixH, uint8_t tX,
     uint8_t tY, uint8_t pin = 6,
     uint8_t matrixType = NEO_MATRIX_TOP + NEO_MATRIX_LEFT + NEO_MATRIX_ROWS +
                          NEO_TILE_TOP + NEO_TILE_LEFT + NEO_TILE_ROWS,
-    uint8_t ledType    = NEO_GRB + NEO_KHZ800);
+    neoPixelType ledType = NEO_GRB + NEO_KHZ800);
 
   void
     drawPixel(int16_t x, int16_t y, uint16_t color),
