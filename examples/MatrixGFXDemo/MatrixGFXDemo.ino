@@ -351,8 +351,8 @@ void display_matrix(MatrixDisplay choice, uint8_t bmp_num=0, uint16_t color=0) {
 	matrix->clear();
 	matrix->drawLine(0,2, mw-1,2, LED_RED_VERYLOW);
 	matrix->drawLine(0,3, mw-1,3, LED_RED_LOW);
-	matrix->drawLine(0,4, mw-1,4, LED_RED_MEDIUM);
-	matrix->drawLine(0,5, mw-1,5, LED_RED_HIGH);
+	matrix->drawLine(0,mw/2, mw-1,mw/2, LED_RED_MEDIUM);
+	matrix->drawLine(0,mw/2+1, mw-1,mw/2+1, LED_RED_HIGH);
 	matrix->drawLine(2,0, 2,mh-1, LED_GREEN_VERYLOW);
 	matrix->drawLine(3,0, 3,mh-1, LED_GREEN_LOW);
 	matrix->drawLine(4,0, 4,mh-1, LED_GREEN_MEDIUM);
@@ -438,8 +438,10 @@ void loop() {
     matrix->clear();
     for (uint8_t i=0; i<=2; i++)
     {
+	if (i==2) matrix->clear();
 	display_matrix(BITMAP, i, bmpcolor[i]);
  	delay(3000);
+	// prevent 3rd bitmap from being overlayed on top of 1st
     }
 
     display_matrix(LINES);
