@@ -49,8 +49,8 @@ Adafruit_NeoMatrix *matrix = new Adafruit_NeoMatrix(16, 8, PIN,
   NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG,
   NEO_GRB            + NEO_KHZ800);
 
-const uint16_t colors[] = {
-  matrix->Color(255, 0, 0), matrix->Color(0, 255, 0), matrix->Color(0, 0, 255) };
+uint16_t mw = matrix->width();
+uint16_t mh = matrix->height();
 
 // This could also be defined as matrix->color(255,0,0) but those defines
 // are meant to work for adafruit_gfx backends that are lacking color()
@@ -280,30 +280,10 @@ void setup() {
     matrix->begin();
     matrix->setTextWrap(false);
     matrix->setBrightness(255);
-    matrix->setTextColor(colors[0]);
     matrix->fillScreen(LED_ORANGE_HIGH);
     matrix->show();
     delay(1000);
 }
-
-int x    = matrix->width();
-int pass = 0;
-
-#if 0
-void loop() {
-  matrix->fillScreen(0);
-  matrix->setCursor(x, 0);
-  matrix->print(F("Howdy"));
-  if(--x < -36) {
-    x = matrix->width();
-    if(++pass >= 3) pass = 0;
-    matrix->setTextColor(colors[pass]);
-  }
-  matrix->show();
-  delay(50);
-}
-#endif
-
 
 
 void fixdrawRGBBitmap(int16_t x, int16_t y, const uint16_t *bitmap, int16_t w, int16_t h) {
@@ -342,60 +322,68 @@ void fixdrawRGBBitmap(int16_t x, int16_t y, const uint16_t *bitmap, int16_t w, i
     matrix->drawRGBBitmap(x, y, RGB_bmp_fixed, w, h, false);
 }
 
-void display_matrix(MatrixDisplay choice, uint8_t bmp_num=0, uint16_t color=0) {
-    matrix->clear();
+void display_matrix(MatrixDisplay choice, uint8_t bmp_num=0, uint16_t color=0) { 
+    static uint16_t bmx,bmy;
 
     switch (choice) {
  
     case FOUR_WHITE:
-        matrix->fillRect(0,0, 8,8, LED_WHITE_HIGH);
-        matrix->drawRect(1,1, 6,6, LED_WHITE_MEDIUM);
-        matrix->drawRect(2,2, 4,4, LED_WHITE_LOW);
-        matrix->drawRect(3,3, 2,2, LED_WHITE_VERYLOW);
+	matrix->clear();
+        matrix->fillRect(0,0, mw,mh, LED_WHITE_HIGH);
+        matrix->drawRect(1,1, mw-2,mh-2, LED_WHITE_MEDIUM);
+        matrix->drawRect(2,2, mw-4,mh-4, LED_WHITE_LOW);
+        matrix->drawRect(3,3, mw-6,mh-6, LED_WHITE_VERYLOW);
         break;
 
     case BITMAP:
-	matrix->drawBitmap(0, 0, mono_bmp[bmp_num], 8, 8, color);
+	matrix->drawBitmap(bmx, bmy, mono_bmp[bmp_num], 8, 8, color);
+	bmx = (bmx + 8) % mw;
+	bmy = (bmy + 8) % mh;
         break;
  
     case RGB_BITMAP:
-	fixdrawRGBBitmap(0, 0, RGB_bmp[bmp_num], 8, 8);
+	fixdrawRGBBitmap(bmx, bmy, RGB_bmp[bmp_num], 8, 8);
+	bmx = (bmx + 8) % mw;
+	bmy = (bmy + 8) % mh;
         break;
 
     case LINES:
-	// Without a matrix like above, a red/green crossing isn't as good.
-	matrix->drawLine(0,2, 7,2, LED_RED_VERYLOW);
-	matrix->drawLine(0,3, 7,3, LED_RED_LOW);
-	matrix->drawLine(0,4, 7,4, LED_RED_MEDIUM);
-	matrix->drawLine(0,5, 7,5, LED_RED_HIGH);
-	matrix->drawLine(2,0, 2,7, LED_GREEN_VERYLOW);
-	matrix->drawLine(3,0, 3,7, LED_GREEN_LOW);
-	matrix->drawLine(4,0, 4,7, LED_GREEN_MEDIUM);
-	matrix->drawLine(5,0, 5,7, LED_GREEN_HIGH);
-	matrix->drawLine(0,0, 7,7, LED_BLUE_HIGH);
+	matrix->clear();
+	matrix->drawLine(0,2, mw-1,2, LED_RED_VERYLOW);
+	matrix->drawLine(0,3, mw-1,3, LED_RED_LOW);
+	matrix->drawLine(0,4, mw-1,4, LED_RED_MEDIUM);
+	matrix->drawLine(0,5, mw-1,5, LED_RED_HIGH);
+	matrix->drawLine(2,0, 2,mh-1, LED_GREEN_VERYLOW);
+	matrix->drawLine(3,0, 3,mh-1, LED_GREEN_LOW);
+	matrix->drawLine(4,0, 4,mh-1, LED_GREEN_MEDIUM);
+	matrix->drawLine(5,0, 5,mh-1, LED_GREEN_HIGH);
+	matrix->drawLine(0,0, mh-1,mh-1, LED_BLUE_HIGH);
         break;
 
     case BOXES:
-	matrix->drawRect(0,0, 8,8, LED_BLUE_HIGH);
-	matrix->drawRect(1,1, 6,6, LED_GREEN_MEDIUM);
-	matrix->fillRect(2,2, 4,4, LED_RED_HIGH);
+	matrix->clear();
+	matrix->drawRect(0,0, mw,mh, LED_BLUE_HIGH);
+	matrix->drawRect(1,1, mw-2,mh-2, LED_GREEN_MEDIUM);
+	matrix->fillRect(2,2, mw-4,mh-4, LED_RED_HIGH);
         break;
  
     case CIRCLES:
-	matrix->drawCircle(2,2, 2, LED_RED_MEDIUM);
-	matrix->drawCircle(5,5, 2, LED_BLUE_HIGH);
-	matrix->drawCircle(1,6, 1, LED_GREEN_LOW);
-	matrix->drawCircle(6,1, 1, LED_GREEN_HIGH);
+	matrix->clear();
+	matrix->drawCircle(mw/2,mh/2, 2, LED_RED_MEDIUM);
+	matrix->drawCircle(mw/2-3,mh/2-3, 2, LED_BLUE_HIGH);
+	matrix->drawCircle(1,mh-2, 1, LED_GREEN_LOW);
+	matrix->drawCircle(mw-2,1, 1, LED_GREEN_HIGH);
         break;
 
     case GREENSCROLLTEXT:
+	matrix->clear();
 	matrix->setTextWrap(false);  // we don't wrap text so it scrolls nicely
 	matrix->setTextSize(1);
 	matrix->setTextColor(LED_GREEN_HIGH);
 	matrix->setRotation(3);
 	for (int8_t x=7; x>=-36; x--) {
 	    matrix->clear();
-	    matrix->setCursor(x,0);
+	    matrix->setCursor(x,mw/2-4);
 	    matrix->print("Hello");
 	    matrix->show();
 	   delay(50);
@@ -403,11 +391,12 @@ void display_matrix(MatrixDisplay choice, uint8_t bmp_num=0, uint16_t color=0) {
         break;
     
     case ORANGESCROLLTEXT:
+	matrix->clear();
 	matrix->setRotation(0);
 	matrix->setTextColor(LED_ORANGE_HIGH);
 	for (int8_t x=7; x>=-36; x--) {
 	    matrix->clear();
-	    matrix->setCursor(x,0);
+	    matrix->setCursor(x,mh/2-4);
 	    matrix->print("World");
 	    matrix->show();
 	   delay(50);
@@ -422,9 +411,12 @@ void loop() {
     uint16_t bmpcolor[] = { LED_GREEN_HIGH, LED_BLUE_HIGH, LED_RED_HIGH };
     uint16_t scandelay[] = { 5, 50, 200, 1000 };
 
-    fixdrawRGBBitmap(0, 0, RGB_bmp[0], 8, 8);
+    matrix->clear();
+    fixdrawRGBBitmap(mw/2-4, mh/2-4, RGB_bmp[10], 8, 8);
+    matrix->show();
     delay(1000);
 
+    matrix->clear();
     // Cycle through red, green, blue, display 2 checkered patterns
     for (uint8_t i=0; i<3; i++)
     {
@@ -437,12 +429,13 @@ void loop() {
     for (uint8_t i=0; i<=(sizeof(RGB_bmp)/sizeof(RGB_bmp[0])-1); i++)
     {
 	display_matrix(RGB_BITMAP, i);
- 	delay(3000);
+ 	delay(1500);
     }
 
     display_matrix(FOUR_WHITE, 0);
     delay(3000);
 
+    matrix->clear();
     for (uint8_t i=0; i<=2; i++)
     {
 	display_matrix(BITMAP, i, bmpcolor[i]);
