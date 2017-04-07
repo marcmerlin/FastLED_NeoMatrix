@@ -54,6 +54,8 @@ uint16_t mh = matrix->height();
 
 // This could also be defined as matrix->color(255,0,0) but those defines
 // are meant to work for adafruit_gfx backends that are lacking color()
+#define LED_BLACK		0
+
 #define LED_RED_VERYLOW 	(3 <<  11)
 #define LED_RED_LOW 		(7 <<  11)
 #define LED_RED_MEDIUM 		(15 << 11)
@@ -283,6 +285,7 @@ void setup() {
     matrix->fillScreen(LED_ORANGE_HIGH);
     matrix->show();
     delay(1000);
+    matrix->clear();
 }
 
 
@@ -337,6 +340,10 @@ void display_matrix(MatrixDisplay choice, uint8_t bmp_num=0, uint16_t color=0) {
         break;
 
     case BITMAP:
+	// Clear the space under the bitmap that will be drawn as
+	// drawing a single color pixmap does not write over pixels
+	// that are nul, and leaves the data that was underneath
+	matrix->fillRect(bmx,bmy, bmx+8,bmy+8, LED_BLACK);
 	matrix->drawBitmap(bmx, bmy, mono_bmp[bmp_num], 8, 8, color);
 	bmx = (bmx + 8) % mw;
 	if (!bmx) bmy = (bmy + 8) % mh;
@@ -425,7 +432,6 @@ void loop() {
     Serial.print("Screen pixmap capacity: ");
     Serial.println(pixmap_count);
 
-    matrix->clear();
     // multicolor bitmap sent as many times as we can display an 8x8 pixel
     for (uint8_t i=0; i<=pixmap_count; i++)
     {
@@ -433,22 +439,21 @@ void loop() {
     }
     delay(2000);
 
-    for (uint8_t i=0; i<=2; i++)
-    {
-	if (i % pixmap_count == 0) matrix->clear();
-	display_matrix(BITMAP, i, bmpcolor[i]);
- 	delay(1500);
-    }
 
     // Cycle through red, green, blue, display 2 checkered patterns
     // useful to debug some screen types and alignment.
     for (uint8_t i=0; i<3; i++)
     {
-	if (i % pixmap_count == 0) matrix->clear();
-	display_matrix(BITMAP, 3, bmpcolor[i]);
+	display_matrix(BITMAP, 3 + (i % 2), bmpcolor[i]);
  	delay(500);
-	display_matrix(BITMAP, 4, bmpcolor[i]);
+	display_matrix(BITMAP, 4 - (i % 2), bmpcolor[i]);
  	delay(500);
+    }
+
+    for (uint8_t i=0; i<=2; i++)
+    {
+	display_matrix(BITMAP, i, bmpcolor[i]);
+ 	delay(1500);
     }
 
     display_matrix(LINES);
