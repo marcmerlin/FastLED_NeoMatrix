@@ -286,6 +286,7 @@ void setup() {
 }
 
 
+// Convert a BGR 4/4/4 bitmap to RGB 5/6/5 used by Adafruit_GFX
 void fixdrawRGBBitmap(int16_t x, int16_t y, const uint16_t *bitmap, int16_t w, int16_t h) {
     uint16_t RGB_bmp_fixed[w * h];
     for (uint16_t pixel=0; pixel<w*h; pixel++) {
@@ -338,26 +339,32 @@ void display_matrix(MatrixDisplay choice, uint8_t bmp_num=0, uint16_t color=0) {
     case BITMAP:
 	matrix->drawBitmap(bmx, bmy, mono_bmp[bmp_num], 8, 8, color);
 	bmx = (bmx + 8) % mw;
-	bmy = (bmy + 8) % mh;
+	if (!bmx) bmy = (bmy + 8) % mh;
         break;
  
     case RGB_BITMAP:
 	fixdrawRGBBitmap(bmx, bmy, RGB_bmp[bmp_num], 8, 8);
 	bmx = (bmx + 8) % mw;
-	bmy = (bmy + 8) % mh;
+	if (!bmx) bmy = (bmy + 8) % mh;
         break;
 
     case LINES:
 	matrix->clear();
+
+	// 4 levels of crossing red lines.
 	matrix->drawLine(0,2, mw-1,2, LED_RED_VERYLOW);
 	matrix->drawLine(0,3, mw-1,3, LED_RED_LOW);
-	matrix->drawLine(0,mw/2, mw-1,mw/2, LED_RED_MEDIUM);
-	matrix->drawLine(0,mw/2+1, mw-1,mw/2+1, LED_RED_HIGH);
-	matrix->drawLine(2,0, 2,mh-1, LED_GREEN_VERYLOW);
-	matrix->drawLine(3,0, 3,mh-1, LED_GREEN_LOW);
-	matrix->drawLine(4,0, 4,mh-1, LED_GREEN_MEDIUM);
-	matrix->drawLine(5,0, 5,mh-1, LED_GREEN_HIGH);
-	matrix->drawLine(0,0, mh-1,mh-1, LED_BLUE_HIGH);
+	matrix->drawLine(0,mh/2,   mw-1,mh/2, LED_RED_MEDIUM);
+	matrix->drawLine(0,mh/2+1, mw-1,mh/2+1, LED_RED_HIGH);
+
+	// 4 levels of crossing green lines.
+	matrix->drawLine(mw/2-2, 0, mw/2-2, mh-1, LED_GREEN_VERYLOW);
+	matrix->drawLine(mw/2-1, 0, mw/2-1, mh-1, LED_GREEN_LOW);
+	matrix->drawLine(mw/2+0, 0, mw/2+0, mh-1, LED_GREEN_MEDIUM);
+	matrix->drawLine(mw/2+1, 0, mw/2+1, mh-1, LED_GREEN_HIGH);
+
+	// Diagonal blue line.
+	matrix->drawLine(0,0, mw-1,mh-1, LED_BLUE_HIGH);
         break;
 
     case BOXES:
@@ -408,23 +415,48 @@ void display_matrix(MatrixDisplay choice, uint8_t bmp_num=0, uint16_t color=0) {
 }
 
 void loop() {
+    // clear the screen after X bitmaps have been displayed and we
+    // loop back to the top left corner
+    // 8x8 => 1, 16x8 => 2, 17x9 => 6
+    static uint8_t pixmap_count = ((mw+7)/8) * ((mh+7)/8);
     uint16_t bmpcolor[] = { LED_GREEN_HIGH, LED_BLUE_HIGH, LED_RED_HIGH };
     uint16_t scandelay[] = { 5, 50, 200, 1000 };
 
-    matrix->clear();
-    fixdrawRGBBitmap(mw/2-4, mh/2-4, RGB_bmp[10], 8, 8);
-    matrix->show();
-    delay(1000);
+    Serial.print("Screen pixmap capacity: ");
+    Serial.println(pixmap_count);
 
     matrix->clear();
+    // multicolor bitmap sent as many times as we can display an 8x8 pixel
+    for (uint8_t i=0; i<=pixmap_count; i++)
+    {
+	display_matrix(RGB_BITMAP, 0);
+    }
+    delay(2000);
+
+    for (uint8_t i=0; i<=2; i++)
+    {
+	if (i % pixmap_count == 0) matrix->clear();
+	display_matrix(BITMAP, i, bmpcolor[i]);
+ 	delay(1500);
+    }
+
     // Cycle through red, green, blue, display 2 checkered patterns
+    // useful to debug some screen types and alignment.
     for (uint8_t i=0; i<3; i++)
     {
+	if (i % pixmap_count == 0) matrix->clear();
 	display_matrix(BITMAP, 3, bmpcolor[i]);
  	delay(500);
 	display_matrix(BITMAP, 4, bmpcolor[i]);
  	delay(500);
     }
+
+    display_matrix(LINES);
+    delay(3000);
+
+    display_matrix(BOXES);
+    delay(3000);
+
 
     for (uint8_t i=0; i<=(sizeof(RGB_bmp)/sizeof(RGB_bmp[0])-1); i++)
     {
@@ -432,22 +464,8 @@ void loop() {
  	delay(1500);
     }
 
+    // Fill the screen with multiple levels of white to guage the quality
     display_matrix(FOUR_WHITE, 0);
-    delay(3000);
-
-    matrix->clear();
-    for (uint8_t i=0; i<=2; i++)
-    {
-	if (i==2) matrix->clear();
-	display_matrix(BITMAP, i, bmpcolor[i]);
- 	delay(3000);
-	// prevent 3rd bitmap from being overlayed on top of 1st
-    }
-
-    display_matrix(LINES);
-    delay(3000);
-
-    display_matrix(BOXES);
     delay(3000);
 
 
