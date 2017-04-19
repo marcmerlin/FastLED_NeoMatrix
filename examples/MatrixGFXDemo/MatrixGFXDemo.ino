@@ -419,6 +419,8 @@ void display_matrix(MatrixDisplay choice, uint8_t bmp_num=0, uint16_t color=0) {
 	    matrix->show();
 	   delay(50);
 	}
+	matrix->setRotation(0);
+	matrix->setCursor(0,0);
         break;
 
     }
