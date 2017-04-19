@@ -1,5 +1,6 @@
 // Adafruit_NeoMatrix example for single NeoPixel Shield.
 // By Marc MERLIN <marc_soft@merlins.org>
+// Contains code (c) Adafruit, license BSD
 
 #include <Adafruit_GFX.h>
 #include <Adafruit_NeoMatrix.h>
@@ -44,7 +45,7 @@
 //   NEO_KHZ400  400 KHz bitstream (e.g. FLORA v1 pixels)
 //   NEO_KHZ800  800 KHz bitstream (e.g. High Density LED strip)
 
-Adafruit_NeoMatrix *matrix = new Adafruit_NeoMatrix(16, 8, PIN,
+Adafruit_NeoMatrix *matrix = new Adafruit_NeoMatrix(24, 24, PIN,
   NEO_MATRIX_TOP     + NEO_MATRIX_LEFT +
   NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG,
   NEO_GRB            + NEO_KHZ800);
@@ -98,8 +99,7 @@ typedef enum {
     LINES = 3,
     BOXES = 4,
     CIRCLES = 5,
-    GREENSCROLLTEXT = 6,
-    ORANGESCROLLTEXT = 7,
+    SCROLLTEXT = 6,
 } MatrixDisplay;
 
 static const uint8_t PROGMEM
@@ -359,8 +359,8 @@ void display_matrix(MatrixDisplay choice, uint8_t bmp_num=0, uint16_t color=0) {
 	matrix->clear();
 
 	// 4 levels of crossing red lines.
-	matrix->drawLine(0,2, mw-1,2, LED_RED_VERYLOW);
-	matrix->drawLine(0,3, mw-1,3, LED_RED_LOW);
+	matrix->drawLine(0,mh/2-2, mw-1,2, LED_RED_VERYLOW);
+	matrix->drawLine(0,mh/2-1, mw-1,3, LED_RED_LOW);
 	matrix->drawLine(0,mh/2,   mw-1,mh/2, LED_RED_MEDIUM);
 	matrix->drawLine(0,mh/2+1, mw-1,mh/2+1, LED_RED_HIGH);
 
@@ -372,6 +372,7 @@ void display_matrix(MatrixDisplay choice, uint8_t bmp_num=0, uint16_t color=0) {
 
 	// Diagonal blue line.
 	matrix->drawLine(0,0, mw-1,mh-1, LED_BLUE_HIGH);
+	matrix->drawLine(0,mh-1, mw-1,0, LED_ORANGE_MEDIUM);
         break;
 
     case BOXES:
@@ -379,6 +380,7 @@ void display_matrix(MatrixDisplay choice, uint8_t bmp_num=0, uint16_t color=0) {
 	matrix->drawRect(0,0, mw,mh, LED_BLUE_HIGH);
 	matrix->drawRect(1,1, mw-2,mh-2, LED_GREEN_MEDIUM);
 	matrix->fillRect(2,2, mw-4,mh-4, LED_RED_HIGH);
+	matrix->fillRect(3,3, mw-6,mh-6, LED_ORANGE_MEDIUM);
         break;
  
     case CIRCLES:
@@ -389,29 +391,31 @@ void display_matrix(MatrixDisplay choice, uint8_t bmp_num=0, uint16_t color=0) {
 	matrix->drawCircle(mw-2,1, 1, LED_GREEN_HIGH);
         break;
 
-    case GREENSCROLLTEXT:
+    case SCROLLTEXT:
 	matrix->clear();
 	matrix->setTextWrap(false);  // we don't wrap text so it scrolls nicely
 	matrix->setTextSize(1);
-	matrix->setTextColor(LED_GREEN_HIGH);
-	matrix->setRotation(3);
-	for (int8_t x=7; x>=-36; x--) {
+	matrix->setRotation(0);
+	for (int8_t x=7; x>=-42; x--) {
 	    matrix->clear();
-	    matrix->setCursor(x,mw/2-4);
+	    matrix->setCursor(x,0);
+	    matrix->setTextColor(LED_GREEN_HIGH);
 	    matrix->print("Hello");
+	    if (mh>8) {
+		matrix->setCursor(-20-x,mh-8);
+		matrix->setTextColor(LED_ORANGE_HIGH);
+		matrix->print("World");
+	    }
 	    matrix->show();
 	   delay(50);
 	}
-        break;
-    
-    case ORANGESCROLLTEXT:
-	matrix->clear();
-	matrix->setRotation(0);
-	matrix->setTextColor(LED_ORANGE_HIGH);
-	for (int8_t x=7; x>=-36; x--) {
+
+	matrix->setRotation(3);
+	matrix->setTextColor(LED_BLUE_HIGH);
+	for (int8_t x=7; x>=-60; x--) {
 	    matrix->clear();
 	    matrix->setCursor(x,mh/2-4);
-	    matrix->print("World");
+	    matrix->print("Sideways Too!");
 	    matrix->show();
 	   delay(50);
 	}
@@ -432,7 +436,7 @@ void loop() {
     Serial.print("Screen pixmap capacity: ");
     Serial.println(pixmap_count);
 
-    // multicolor bitmap sent as many times as we can display an 8x8 pixel
+    // multicolor bitmap sent as many times as we can display an 8x8 pixmap
     for (uint8_t i=0; i<=pixmap_count; i++)
     {
 	display_matrix(RGB_BITMAP, 0);
@@ -453,8 +457,10 @@ void loop() {
     for (uint8_t i=0; i<=2; i++)
     {
 	display_matrix(BITMAP, i, bmpcolor[i]);
- 	delay(1500);
+	delay(mw>8?500:1500);
     }
+    // If we have multiple pixmaps displayed at once, wait a bit longer.
+    delay(mw>8?1500:500);
 
     display_matrix(LINES);
     delay(3000);
@@ -466,15 +472,14 @@ void loop() {
     for (uint8_t i=0; i<=(sizeof(RGB_bmp)/sizeof(RGB_bmp[0])-1); i++)
     {
 	display_matrix(RGB_BITMAP, i);
- 	delay(1500);
+	delay(mw>8?500:1500);
     }
 
     // Fill the screen with multiple levels of white to guage the quality
     display_matrix(FOUR_WHITE, 0);
     delay(3000);
 
-
-    display_matrix(GREENSCROLLTEXT);
-
-    display_matrix(ORANGESCROLLTEXT);
+    display_matrix(SCROLLTEXT);
 }
+
+// vim:sts=4:sw=4
