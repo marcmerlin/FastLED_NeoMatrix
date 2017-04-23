@@ -5,11 +5,25 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_NeoMatrix.h>
 #include <Adafruit_NeoPixel.h>
+//#include "heart24.h"
+#include "yellowsmiley24.h"
+//#include "bluesmiley24.h"
 #ifndef PSTR
  #define PSTR // Make Arduino Due happy
 #endif
 
 #define PIN 6
+
+typedef enum {
+    FOUR_WHITE = 0,
+    BITMAP = 1,
+    RGB_BITMAP = 2,
+    LINES = 3,
+    BOXES = 4,
+    CIRCLES = 5,
+    SCROLLTEXT = 6,
+    BOUNCE_BITMAP = 7,
+} MatrixDisplay;
 
 // MATRIX DECLARATION:
 // Parameter 1 = width of EACH NEOPIXEL MATRIX (not total display)
@@ -91,16 +105,6 @@ uint16_t mh = matrix->height();
 #define LED_WHITE_LOW		(LED_RED_LOW     + LED_GREEN_LOW     + LED_BLUE_LOW)
 #define LED_WHITE_MEDIUM	(LED_RED_MEDIUM  + LED_GREEN_MEDIUM  + LED_BLUE_MEDIUM)
 #define LED_WHITE_HIGH		(LED_RED_HIGH    + LED_GREEN_HIGH    + LED_BLUE_HIGH)
-
-typedef enum {
-    FOUR_WHITE = 0,
-    BITMAP = 1,
-    RGB_BITMAP = 2,
-    LINES = 3,
-    BOXES = 4,
-    CIRCLES = 5,
-    SCROLLTEXT = 6,
-} MatrixDisplay;
 
 static const uint8_t PROGMEM
     mono_bmp[][8] =
@@ -281,7 +285,8 @@ void setup() {
     Serial.begin(115200);
     matrix->begin();
     matrix->setTextWrap(false);
-    matrix->setBrightness(255);
+    //matrix->setBrightness(255);
+    matrix->setBrightness(32);
     matrix->fillScreen(LED_ORANGE_HIGH);
     matrix->show();
     delay(1000);
@@ -345,14 +350,18 @@ void display_matrix(MatrixDisplay choice, uint8_t bmp_num=0, uint16_t color=0) {
 	// that are nul, and leaves the data that was underneath
 	matrix->fillRect(bmx,bmy, bmx+8,bmy+8, LED_BLACK);
 	matrix->drawBitmap(bmx, bmy, mono_bmp[bmp_num], 8, 8, color);
-	bmx = (bmx + 8) % mw;
-	if (!bmx) bmy = (bmy + 8) % mh;
+	bmx += 8;
+	if (bmx > mw) bmx = 0;
+	if (!bmx) bmy += 8;
+	if (bmy > mh) bmy = 0;
         break;
  
     case RGB_BITMAP:
 	fixdrawRGBBitmap(bmx, bmy, RGB_bmp[bmp_num], 8, 8);
-	bmx = (bmx + 8) % mw;
-	if (!bmx) bmy = (bmy + 8) % mh;
+	bmx += 8;
+	if (bmx > mw) bmx = 0;
+	if (!bmx) bmy += 8;
+	if (bmy > mh) bmy = 0;
         break;
 
     case LINES:
@@ -401,8 +410,8 @@ void display_matrix(MatrixDisplay choice, uint8_t bmp_num=0, uint16_t color=0) {
 	    matrix->setCursor(x,0);
 	    matrix->setTextColor(LED_GREEN_HIGH);
 	    matrix->print("Hello");
-	    if (mh>8) {
-		matrix->setCursor(-20-x,mh-8);
+	    if (mh>11) {
+		matrix->setCursor(-20-x,min(9, mh-7));
 		matrix->setTextColor(LED_ORANGE_HIGH);
 		matrix->print("World");
 	    }
@@ -423,6 +432,44 @@ void display_matrix(MatrixDisplay choice, uint8_t bmp_num=0, uint16_t color=0) {
 	matrix->setCursor(0,0);
         break;
 
+    case BOUNCE_BITMAP:
+	{
+	    // keep integer math, deal with values 16 times too big
+	    int16_t xf = (mw/2-4) << 4;
+	    int16_t yf = (mh/2-4) << 4;
+	    int16_t xfc = random(16);
+	    int16_t yfc = random(16);
+	    int16_t xfdir = 1;
+	    int16_t yfdir = 1;
+
+	    for (uint8_t i=1; i<255; i++) {
+		bool updDir = false;
+
+		// and then dvide by 16 here.
+		int16_t x = xf >> 4;
+		int16_t y = yf >> 4;
+
+		matrix->clear();
+		matrix->drawRGBBitmap(x, y, heart, 24, 24, true);
+		matrix->show();
+		 
+		xf += xfc*xfdir;
+		yf += yfc*yfdir;
+		// Deal with bouncing off the 'walls'
+		if (xf >= (mw-8) << 4) { xfdir *= -1; updDir = true ; };
+		if (xf <= (mw-24 << 4)) { xfdir *= -1;	      updDir = true ; };
+		if (yf >= (mh-8) << 4) { yfdir *= -1; updDir = true ; };
+		if (yf <= (mh-24 << 4)) { yfdir *= -1;	      updDir = true ; };
+		if (updDir) {
+		    // Add -1, 0 or 1 but bind result to 1 to 1.
+		    xfc = constrain(xfc + random(-1, 2), 1, 16);
+		    yfc = constrain(xfc + random(-1, 2), 1, 16);
+		}
+		delay(20);
+	    }
+	}
+        break;
+
     }
     matrix->show();
 }
@@ -437,14 +484,13 @@ void loop() {
 
     Serial.print("Screen pixmap capacity: ");
     Serial.println(pixmap_count);
+    display_matrix(RGB_BITMAP, 0);
 
     // multicolor bitmap sent as many times as we can display an 8x8 pixmap
     for (uint8_t i=0; i<=pixmap_count; i++)
     {
 	display_matrix(RGB_BITMAP, 0);
     }
-    delay(2000);
-
 
     // Cycle through red, green, blue, display 2 checkered patterns
     // useful to debug some screen types and alignment.
@@ -482,6 +528,10 @@ void loop() {
     delay(3000);
 
     display_matrix(SCROLLTEXT);
+    delay(2000);
+
+    display_matrix(BOUNCE_BITMAP, 0);
+    delay(2000);
 }
 
 // vim:sts=4:sw=4
