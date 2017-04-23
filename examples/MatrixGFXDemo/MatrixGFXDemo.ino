@@ -28,8 +28,8 @@
 #define BRIGHTNESS 96
 
 // Define matrix width and height.
-#define mw 24
-#define mh 24
+#define mw 16
+#define mh 8
 
 // MATRIX DECLARATION:
 // Parameter 1 = width of EACH NEOPIXEL MATRIX (not total display)
@@ -433,13 +433,14 @@ void display_scrollText() {
 }
 
 // Scroll within big bitmap so that all if it becomes visible.
-void display_panBitmap () {
-    // keep integer math, deal with values 16 times too big
-    uint8_t panBitmapSize = 24;
+void display_panOrBounceBitmap (bool pan) {
+    uint8_t bitmapSize = 8;
+    if (pan) bitmapSize = 24;
     
+    // keep integer math, deal with values 16 times too big
     // start by showing upper left of big bitmap or centering if the display is big
-    int16_t xf = max(0, (mw-panBitmapSize)/2) << 4;
-    int16_t yf = max(0, (mh-panBitmapSize)/2) << 4;
+    int16_t xf = max(0, (mw-bitmapSize)/2) << 4;
+    int16_t yf = max(0, (mh-bitmapSize)/2) << 4;
     // scroll speed in 1/16th
     int16_t xfc = 6;
     int16_t yfc = 3;
@@ -448,7 +449,7 @@ void display_panBitmap () {
     int16_t xfdir = -1;
     int16_t yfdir = -1;
 
-    for (uint16_t i=1; i<500; i++) {
+    for (uint16_t i=1; i<1000; i++) {
 	bool updDir = false;
 
 	// Get actual x/y by dividing by 16.
@@ -456,19 +457,36 @@ void display_panBitmap () {
 	int16_t y = yf >> 4;
 
 	matrix->clear();
-	matrix->drawRGBBitmap(x, y, bitmap24, panBitmapSize, panBitmapSize, true);
+	// bounce 8x8 tri color smiley face around the screen
+	if (!pan) fixdrawRGBBitmap(x, y, RGB_bmp[10], 8, 8);
+	// pan 24x24 pixmap
+	if (pan) matrix->drawRGBBitmap(x, y, bitmap24, bitmapSize, bitmapSize, true);
 	matrix->show();
 	 
 	// Only pan if the display size is smaller than the pixmap
-	if (mw<panBitmapSize) xf += xfc*xfdir;
-	if (mh<panBitmapSize) yf += yfc*yfdir;
+	if (pan) {
+	    if (mw<bitmapSize) xf += xfc*xfdir;
+	    if (mh<bitmapSize) yf += yfc*yfdir;
+	} else {
+	    // only bounce a pixmap if it's smaller than the display size
+	    if (mw>bitmapSize) xf += xfc*xfdir;
+	    if (mh>bitmapSize) yf += yfc*yfdir;
+	}
 	
-	// we shouldn't display past left corner, reverse direction.
-	if (xf >= 0)                         { xfdir = -1; updDir = true ; };
-	// we don't go negative past right corner, go back positive
-	if (xf <= ((mw-panBitmapSize) << 4)) { xfdir = 1;  updDir = true ; };
-	if (yf >= 0)                         { yfdir = -1; updDir = true ; };
-	if (yf <= ((mh-panBitmapSize) << 4)) { yfdir = 1;  updDir = true ; };
+	if (pan) {
+	    // we shouldn't display past left corner, reverse direction.
+	    if (xf >= 0)                         { xfdir = -1; updDir = true ; };
+	    // we don't go negative past right corner, go back positive
+	    if (xf <= ((mw-bitmapSize) << 4)) { xfdir = 1;  updDir = true ; };
+	    if (yf >= 0)                         { yfdir = -1; updDir = true ; };
+	    if (yf <= ((mh-bitmapSize) << 4)) { yfdir = 1;  updDir = true ; };
+	} else {
+	    // Deal with bouncing off the 'walls'
+	    if (xf >= (mw-8) << 4) { xfdir = -1; updDir = true ; };
+	    if (xf <= 0)           { xfdir =  1; updDir = true ; };
+	    if (yf >= (mh-8) << 4) { yfdir = -1; updDir = true ; };
+	    if (yf <= 0)           { yfdir =  1; updDir = true ; };
+	}
 	if (updDir) {
 	    // Add -1, 0 or 1 but bind result to 1 to 1.
 	    xfc = constrain(xfc + random(-1, 2), 1, 16);
@@ -538,8 +556,10 @@ void loop() {
 
     display_scrollText();
 
-    display_panBitmap();
-    delay(2000);
+    // pan a big pixmap
+    display_panOrBounceBitmap(true);
+    // bounce around a small one
+    display_panOrBounceBitmap(false);
 }
 
 void setup() {
