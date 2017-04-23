@@ -4,7 +4,13 @@
 // Image Size     : 24x24 pixels
 // Memory usage   : 1152 bytes
 
-#include <avr/pgmspace.h>
+#if defined(__AVR__)
+    #include <avr/pgmspace.h>
+#elif defined(__PIC32MX__)
+    #define PROGMEM
+#elif defined(__arm__)
+    #define PROGMEM
+#endif
 
 const unsigned short bitmap24[576] PROGMEM={
 0x0801, 0x0800, 0x0800, 0x0000, 0x0000, 0x0040, 0x1880, 0x6122, 0x82A1, 0xA3C4, 0xBC65, 0xC4A5, 0xCCA6, 0xBC45, 0xA383, 0x8280,   // 0x0010 (16) pixels

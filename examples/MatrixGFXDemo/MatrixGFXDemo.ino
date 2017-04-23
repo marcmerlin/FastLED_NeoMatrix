@@ -16,13 +16,20 @@
 
 #define PIN 6
 
+// ESP8266 has an I2S neopixel library which can only use pin RX
+// so it's recommended to use the same pin with Neopixel to avoid
+// rewiring when changing libs
+#ifdef ESP8266
+#define PIN RX
+#endif
+
 // Max is 255, 32 is a conservative value to not overload
 // a USB power supply (500mA) for 12x12 pixels.
-#define BRIGHTNESS 64
+#define BRIGHTNESS 96
 
-// Define matrix height and width.
-uint16_t mw = 12;
-uint16_t mh = 12;
+// Define matrix width and height.
+#define mw 24
+#define mh 24
 
 // MATRIX DECLARATION:
 // Parameter 1 = width of EACH NEOPIXEL MATRIX (not total display)
@@ -105,8 +112,30 @@ Adafruit_NeoMatrix *matrix = new Adafruit_NeoMatrix(mw, mh, PIN,
 static const uint8_t PROGMEM
     mono_bmp[][8] =
     {
+	{   // 0: checkered 1
+	    B10101010,
+	    B01010101,
+	    B10101010,
+	    B01010101,
+	    B10101010,
+	    B01010101,
+	    B10101010,
+	    B01010101,
+			},
 
-	{   B00111100,
+	{   // 1: checkered 2
+	    B01010101,
+	    B10101010,
+	    B01010101,
+	    B10101010,
+	    B01010101,
+	    B10101010,
+	    B01010101,
+	    B10101010,
+			},
+
+	{   // 2: smiley
+	    B00111100,
 	    B01000010,
 	    B10100101,
 	    B10000001,
@@ -115,7 +144,8 @@ static const uint8_t PROGMEM
 	    B01000010,
 	    B00111100 },
 
-	{   B00111100,
+	{   // 3: neutral
+	    B00111100,
 	    B01000010,
 	    B10100101,
 	    B10000001,
@@ -124,7 +154,8 @@ static const uint8_t PROGMEM
 	    B01000010,
 	    B00111100 },
 
-	{   B00111100,
+	{   // 4; frowny
+	    B00111100,
 	    B01000010,
 	    B10100101,
 	    B10000001,
@@ -132,28 +163,6 @@ static const uint8_t PROGMEM
 	    B10100101,
 	    B01000010,
 	    B00111100 },
-
-	{   
-	    B10101010,
-	    B01010101,
-	    B10101010,
-	    B01010101,
-	    B10101010,
-	    B01010101,
-	    B10101010,
-	    B01010101,
-			},
-
-	{   
-	    B01010101,
-	    B10101010,
-	    B01010101,
-	    B10101010,
-	    B01010101,
-	    B10101010,
-	    B01010101,
-	    B10101010,
-			},
     };
 
 static const uint16_t PROGMEM
@@ -333,9 +342,9 @@ void display_bitmap(uint8_t bmp_num, uint16_t color) {
     matrix->fillRect(bmx,bmy, bmx+8,bmy+8, LED_BLACK);
     matrix->drawBitmap(bmx, bmy, mono_bmp[bmp_num], 8, 8, color);
     bmx += 8;
-    if (bmx > mw) bmx = 0;
+    if (bmx >= mw) bmx = 0;
     if (!bmx) bmy += 8;
-    if (bmy > mh) bmy = 0;
+    if (bmy >= mh) bmy = 0;
     matrix->show();
 }
 
@@ -344,9 +353,9 @@ void display_rgbBitmap(uint8_t bmp_num) {
 
     fixdrawRGBBitmap(bmx, bmy, RGB_bmp[bmp_num], 8, 8);
     bmx += 8;
-    if (bmx > mw) bmx = 0;
+    if (bmx >= mw) bmx = 0;
     if (!bmx) bmy += 8;
-    if (bmy > mh) bmy = 0;
+    if (bmy >= mh) bmy = 0;
     matrix->show();
 }
 
@@ -401,7 +410,7 @@ void display_scrollText() {
 	matrix->setTextColor(LED_GREEN_HIGH);
 	matrix->print("Hello");
 	if (mh>11) {
-	    matrix->setCursor(-20-x,min(9, mh-7));
+	    matrix->setCursor(-20-x,mh-7);
 	    matrix->setTextColor(LED_ORANGE_HIGH);
 	    matrix->print("World");
 	}
@@ -428,11 +437,9 @@ void display_panBitmap () {
     // keep integer math, deal with values 16 times too big
     uint8_t panBitmapSize = 24;
     
-    //int16_t xf = (mw/2-4) << 4;
-    //int16_t yf = (mh/2-4) << 4;
-    // start by showing upper left of big bitmap
-    int16_t xf = 0;
-    int16_t yf = 0;
+    // start by showing upper left of big bitmap or centering if the display is big
+    int16_t xf = max(0, (mw-panBitmapSize)/2) << 4;
+    int16_t yf = max(0, (mh-panBitmapSize)/2) << 4;
     // scroll speed in 1/16th
     int16_t xfc = 6;
     int16_t yfc = 3;
@@ -441,7 +448,7 @@ void display_panBitmap () {
     int16_t xfdir = -1;
     int16_t yfdir = -1;
 
-    for (uint16_t i=1; i<1000; i++) {
+    for (uint16_t i=1; i<500; i++) {
 	bool updDir = false;
 
 	// Get actual x/y by dividing by 16.
@@ -452,8 +459,9 @@ void display_panBitmap () {
 	matrix->drawRGBBitmap(x, y, bitmap24, panBitmapSize, panBitmapSize, true);
 	matrix->show();
 	 
-	xf += xfc*xfdir;
-	yf += yfc*yfdir;
+	// Only pan if the display size is smaller than the pixmap
+	if (mw<panBitmapSize) xf += xfc*xfdir;
+	if (mh<panBitmapSize) yf += yfc*yfdir;
 	
 	// we shouldn't display past left corner, reverse direction.
 	if (xf >= 0)                         { xfdir = -1; updDir = true ; };
@@ -476,7 +484,6 @@ void loop() {
     // loop back to the top left corner
     // 8x8 => 1, 16x8 => 2, 17x9 => 6
     static uint8_t pixmap_count = ((mw+7)/8) * ((mh+7)/8);
-    uint16_t bmpcolor[] = { LED_GREEN_HIGH, LED_BLUE_HIGH, LED_RED_HIGH };
 
     Serial.print("Screen pixmap capacity: ");
     Serial.println(pixmap_count);
@@ -486,23 +493,27 @@ void loop() {
     {
 	display_rgbBitmap(0);
     }
+    delay(1000);
 
     // Cycle through red, green, blue, display 2 checkered patterns
     // useful to debug some screen types and alignment.
+    uint16_t bmpcolor[] = { LED_GREEN_HIGH, LED_BLUE_HIGH, LED_RED_HIGH };
     for (uint8_t i=0; i<3; i++)
     {
-	display_bitmap(3 + (i % 2), bmpcolor[i]);
+	display_bitmap(0, bmpcolor[i]);
  	delay(500);
-	display_bitmap(4 - (i % 2), bmpcolor[i]);
+	display_bitmap(1, bmpcolor[i]);
  	delay(500);
     }
 
-    for (uint8_t i=0; i<=2; i++)
+    // Display 3 smiley faces.
+    for (uint8_t i=2; i<=4; i++)
     {
-	display_bitmap(i, bmpcolor[i]);
+	display_bitmap(i, bmpcolor[i-2]);
+	// If more than one pixmap displayed per screen, display more quickly.
 	delay(mw>8?500:1500);
     }
-    // If we have multiple pixmaps displayed at once, wait a bit longer.
+    // If we have multiple pixmaps displayed at once, wait a bit longer on the last.
     delay(mw>8?1000:500);
 
     display_lines();
@@ -519,6 +530,8 @@ void loop() {
 	display_rgbBitmap(i);
 	delay(mw>8?500:1500);
     }
+    // If we have multiple pixmaps displayed at once, wait a bit longer on the last.
+    delay(mw>8?1000:500);
 
     display_four_white();
     delay(3000);
@@ -527,9 +540,6 @@ void loop() {
 
     display_panBitmap();
     delay(2000);
-
-    //display_matrix(BOUNCE_BITMAP, 0);
-    //delay(2000);
 }
 
 void setup() {
