@@ -5,6 +5,8 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_NeoMatrix.h>
 #include <Adafruit_NeoPixel.h>
+
+// Choose your prefered pixmap
 //#include "heart24.h"
 #include "yellowsmiley24.h"
 //#include "bluesmiley24.h"
@@ -14,16 +16,9 @@
 
 #define PIN 6
 
-typedef enum {
-    FOUR_WHITE = 0,
-    BITMAP = 1,
-    RGB_BITMAP = 2,
-    LINES = 3,
-    BOXES = 4,
-    CIRCLES = 5,
-    SCROLLTEXT = 6,
-    BOUNCE_BITMAP = 7,
-} MatrixDisplay;
+// Define matrix height and width.
+uint16_t mw = 12;
+uint16_t mh = 12;
 
 // MATRIX DECLARATION:
 // Parameter 1 = width of EACH NEOPIXEL MATRIX (not total display)
@@ -59,13 +54,10 @@ typedef enum {
 //   NEO_KHZ400  400 KHz bitstream (e.g. FLORA v1 pixels)
 //   NEO_KHZ800  800 KHz bitstream (e.g. High Density LED strip)
 
-Adafruit_NeoMatrix *matrix = new Adafruit_NeoMatrix(24, 24, PIN,
+Adafruit_NeoMatrix *matrix = new Adafruit_NeoMatrix(mw, mh, PIN,
   NEO_MATRIX_TOP     + NEO_MATRIX_LEFT +
   NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG,
   NEO_GRB            + NEO_KHZ800);
-
-uint16_t mw = matrix->width();
-uint16_t mh = matrix->height();
 
 // This could also be defined as matrix->color(255,0,0) but those defines
 // are meant to work for adafruit_gfx backends that are lacking color()
@@ -331,148 +323,151 @@ void fixdrawRGBBitmap(int16_t x, int16_t y, const uint16_t *bitmap, int16_t w, i
     matrix->drawRGBBitmap(x, y, RGB_bmp_fixed, w, h, false);
 }
 
-void display_matrix(MatrixDisplay choice, uint8_t bmp_num=0, uint16_t color=0) { 
-    static uint16_t bmx,bmy;
-
-    switch (choice) {
- 
-    case FOUR_WHITE:
-	matrix->clear();
-        matrix->fillRect(0,0, mw,mh, LED_WHITE_HIGH);
-        matrix->drawRect(1,1, mw-2,mh-2, LED_WHITE_MEDIUM);
-        matrix->drawRect(2,2, mw-4,mh-4, LED_WHITE_LOW);
-        matrix->drawRect(3,3, mw-6,mh-6, LED_WHITE_VERYLOW);
-        break;
-
-    case BITMAP:
-	// Clear the space under the bitmap that will be drawn as
-	// drawing a single color pixmap does not write over pixels
-	// that are nul, and leaves the data that was underneath
-	matrix->fillRect(bmx,bmy, bmx+8,bmy+8, LED_BLACK);
-	matrix->drawBitmap(bmx, bmy, mono_bmp[bmp_num], 8, 8, color);
-	bmx += 8;
-	if (bmx > mw) bmx = 0;
-	if (!bmx) bmy += 8;
-	if (bmy > mh) bmy = 0;
-        break;
- 
-    case RGB_BITMAP:
-	fixdrawRGBBitmap(bmx, bmy, RGB_bmp[bmp_num], 8, 8);
-	bmx += 8;
-	if (bmx > mw) bmx = 0;
-	if (!bmx) bmy += 8;
-	if (bmy > mh) bmy = 0;
-        break;
-
-    case LINES:
-	matrix->clear();
-
-	// 4 levels of crossing red lines.
-	matrix->drawLine(0,mh/2-2, mw-1,2, LED_RED_VERYLOW);
-	matrix->drawLine(0,mh/2-1, mw-1,3, LED_RED_LOW);
-	matrix->drawLine(0,mh/2,   mw-1,mh/2, LED_RED_MEDIUM);
-	matrix->drawLine(0,mh/2+1, mw-1,mh/2+1, LED_RED_HIGH);
-
-	// 4 levels of crossing green lines.
-	matrix->drawLine(mw/2-2, 0, mw/2-2, mh-1, LED_GREEN_VERYLOW);
-	matrix->drawLine(mw/2-1, 0, mw/2-1, mh-1, LED_GREEN_LOW);
-	matrix->drawLine(mw/2+0, 0, mw/2+0, mh-1, LED_GREEN_MEDIUM);
-	matrix->drawLine(mw/2+1, 0, mw/2+1, mh-1, LED_GREEN_HIGH);
-
-	// Diagonal blue line.
-	matrix->drawLine(0,0, mw-1,mh-1, LED_BLUE_HIGH);
-	matrix->drawLine(0,mh-1, mw-1,0, LED_ORANGE_MEDIUM);
-        break;
-
-    case BOXES:
-	matrix->clear();
-	matrix->drawRect(0,0, mw,mh, LED_BLUE_HIGH);
-	matrix->drawRect(1,1, mw-2,mh-2, LED_GREEN_MEDIUM);
-	matrix->fillRect(2,2, mw-4,mh-4, LED_RED_HIGH);
-	matrix->fillRect(3,3, mw-6,mh-6, LED_ORANGE_MEDIUM);
-        break;
- 
-    case CIRCLES:
-	matrix->clear();
-	matrix->drawCircle(mw/2,mh/2, 2, LED_RED_MEDIUM);
-	matrix->drawCircle(mw/2-3,mh/2-3, 2, LED_BLUE_HIGH);
-	matrix->drawCircle(1,mh-2, 1, LED_GREEN_LOW);
-	matrix->drawCircle(mw-2,1, 1, LED_GREEN_HIGH);
-        break;
-
-    case SCROLLTEXT:
-	matrix->clear();
-	matrix->setTextWrap(false);  // we don't wrap text so it scrolls nicely
-	matrix->setTextSize(1);
-	matrix->setRotation(0);
-	for (int8_t x=7; x>=-42; x--) {
-	    matrix->clear();
-	    matrix->setCursor(x,0);
-	    matrix->setTextColor(LED_GREEN_HIGH);
-	    matrix->print("Hello");
-	    if (mh>11) {
-		matrix->setCursor(-20-x,min(9, mh-7));
-		matrix->setTextColor(LED_ORANGE_HIGH);
-		matrix->print("World");
-	    }
-	    matrix->show();
-	   delay(50);
-	}
-
-	matrix->setRotation(3);
-	matrix->setTextColor(LED_BLUE_HIGH);
-	for (int8_t x=7; x>=-60; x--) {
-	    matrix->clear();
-	    matrix->setCursor(x,mh/2-4);
-	    matrix->print("Sideways Too!");
-	    matrix->show();
-	   delay(50);
-	}
-	matrix->setRotation(0);
-	matrix->setCursor(0,0);
-        break;
-
-    case BOUNCE_BITMAP:
-	{
-	    // keep integer math, deal with values 16 times too big
-	    int16_t xf = (mw/2-4) << 4;
-	    int16_t yf = (mh/2-4) << 4;
-	    int16_t xfc = random(16);
-	    int16_t yfc = random(16);
-	    int16_t xfdir = 1;
-	    int16_t yfdir = 1;
-
-	    for (uint8_t i=1; i<255; i++) {
-		bool updDir = false;
-
-		// and then dvide by 16 here.
-		int16_t x = xf >> 4;
-		int16_t y = yf >> 4;
-
-		matrix->clear();
-		matrix->drawRGBBitmap(x, y, heart, 24, 24, true);
-		matrix->show();
-		 
-		xf += xfc*xfdir;
-		yf += yfc*yfdir;
-		// Deal with bouncing off the 'walls'
-		if (xf >= (mw-8) << 4) { xfdir *= -1; updDir = true ; };
-		if (xf <= (mw-24 << 4)) { xfdir *= -1;	      updDir = true ; };
-		if (yf >= (mh-8) << 4) { yfdir *= -1; updDir = true ; };
-		if (yf <= (mh-24 << 4)) { yfdir *= -1;	      updDir = true ; };
-		if (updDir) {
-		    // Add -1, 0 or 1 but bind result to 1 to 1.
-		    xfc = constrain(xfc + random(-1, 2), 1, 16);
-		    yfc = constrain(xfc + random(-1, 2), 1, 16);
-		}
-		delay(20);
-	    }
-	}
-        break;
-
-    }
+// Fill the screen with multiple levels of white to gauge the quality
+void display_four_white() {
+    matrix->clear();
+    matrix->fillRect(0,0, mw,mh, LED_WHITE_HIGH);
+    matrix->drawRect(1,1, mw-2,mh-2, LED_WHITE_MEDIUM);
+    matrix->drawRect(2,2, mw-4,mh-4, LED_WHITE_LOW);
+    matrix->drawRect(3,3, mw-6,mh-6, LED_WHITE_VERYLOW);
     matrix->show();
 }
+
+void display_bitmap(uint8_t bmp_num, uint16_t color) { 
+    static uint16_t bmx,bmy;
+
+    // Clear the space under the bitmap that will be drawn as
+    // drawing a single color pixmap does not write over pixels
+    // that are nul, and leaves the data that was underneath
+    matrix->fillRect(bmx,bmy, bmx+8,bmy+8, LED_BLACK);
+    matrix->drawBitmap(bmx, bmy, mono_bmp[bmp_num], 8, 8, color);
+    bmx += 8;
+    if (bmx > mw) bmx = 0;
+    if (!bmx) bmy += 8;
+    if (bmy > mh) bmy = 0;
+    matrix->show();
+}
+
+void display_rgbBitmap(uint8_t bmp_num) { 
+    static uint16_t bmx,bmy;
+
+    fixdrawRGBBitmap(bmx, bmy, RGB_bmp[bmp_num], 8, 8);
+    bmx += 8;
+    if (bmx > mw) bmx = 0;
+    if (!bmx) bmy += 8;
+    if (bmy > mh) bmy = 0;
+    matrix->show();
+}
+
+void display_lines() {
+    matrix->clear();
+
+    // 4 levels of crossing red lines.
+    matrix->drawLine(0,mh/2-2, mw-1,2, LED_RED_VERYLOW);
+    matrix->drawLine(0,mh/2-1, mw-1,3, LED_RED_LOW);
+    matrix->drawLine(0,mh/2,   mw-1,mh/2, LED_RED_MEDIUM);
+    matrix->drawLine(0,mh/2+1, mw-1,mh/2+1, LED_RED_HIGH);
+
+    // 4 levels of crossing green lines.
+    matrix->drawLine(mw/2-2, 0, mw/2-2, mh-1, LED_GREEN_VERYLOW);
+    matrix->drawLine(mw/2-1, 0, mw/2-1, mh-1, LED_GREEN_LOW);
+    matrix->drawLine(mw/2+0, 0, mw/2+0, mh-1, LED_GREEN_MEDIUM);
+    matrix->drawLine(mw/2+1, 0, mw/2+1, mh-1, LED_GREEN_HIGH);
+
+    // Diagonal blue line.
+    matrix->drawLine(0,0, mw-1,mh-1, LED_BLUE_HIGH);
+    matrix->drawLine(0,mh-1, mw-1,0, LED_ORANGE_MEDIUM);
+    matrix->show();
+}
+
+void display_boxes() {
+    matrix->clear();
+    matrix->drawRect(0,0, mw,mh, LED_BLUE_HIGH);
+    matrix->drawRect(1,1, mw-2,mh-2, LED_GREEN_MEDIUM);
+    matrix->fillRect(2,2, mw-4,mh-4, LED_RED_HIGH);
+    matrix->fillRect(3,3, mw-6,mh-6, LED_ORANGE_MEDIUM);
+    matrix->show();
+}
+
+void display_circles() {
+    matrix->clear();
+    matrix->drawCircle(mw/2,mh/2, 2, LED_RED_MEDIUM);
+    matrix->drawCircle(mw/2-3,mh/2-3, 2, LED_BLUE_HIGH);
+    matrix->drawCircle(mw/2+3,mh/2+3, 2, LED_ORANGE_MEDIUM);
+    matrix->drawCircle(1,mh-2, 1, LED_GREEN_LOW);
+    matrix->drawCircle(mw-2,1, 1, LED_GREEN_HIGH);
+    matrix->show();
+}
+
+void display_scrollText() {
+    matrix->clear();
+    matrix->setTextWrap(false);  // we don't wrap text so it scrolls nicely
+    matrix->setTextSize(1);
+    matrix->setRotation(0);
+    for (int8_t x=7; x>=-42; x--) {
+	matrix->clear();
+	matrix->setCursor(x,0);
+	matrix->setTextColor(LED_GREEN_HIGH);
+	matrix->print("Hello");
+	if (mh>11) {
+	    matrix->setCursor(-20-x,min(9, mh-7));
+	    matrix->setTextColor(LED_ORANGE_HIGH);
+	    matrix->print("World");
+	}
+	matrix->show();
+       delay(50);
+    }
+
+    matrix->setRotation(3);
+    matrix->setTextColor(LED_BLUE_HIGH);
+    for (int8_t x=7; x>=-60; x--) {
+	matrix->clear();
+	matrix->setCursor(x,mh/2-4);
+	matrix->print("Sideways Too!");
+	matrix->show();
+       delay(50);
+    }
+    matrix->setRotation(0);
+    matrix->setCursor(0,0);
+    matrix->show();
+}
+
+void display_panBitmap () {
+    // keep integer math, deal with values 16 times too big
+    int16_t xf = (mw/2-4) << 4;
+    int16_t yf = (mh/2-4) << 4;
+    int16_t xfc = random(16);
+    int16_t yfc = random(16);
+    int16_t xfdir = 1;
+    int16_t yfdir = 1;
+
+    for (uint8_t i=1; i<255; i++) {
+	bool updDir = false;
+
+	// and then dvide by 16 here.
+	int16_t x = xf >> 4;
+	int16_t y = yf >> 4;
+
+	matrix->clear();
+	matrix->drawRGBBitmap(x, y, bitmap24, 24, 24, true);
+	matrix->show();
+	 
+	xf += xfc*xfdir;
+	yf += yfc*yfdir;
+	// Deal with bouncing off the 'walls'
+	if (xf >= ((mw-8) << 4)) { xfdir *= -1; updDir = true ; };
+	if (xf <= ((mw-24) << 4)) { xfdir *= -1; updDir = true ; };
+	if (yf >= ((mh-8) << 4)) { yfdir *= -1; updDir = true ; };
+	if (yf <= ((mh-24) << 4)) { yfdir *= -1; updDir = true ; };
+	if (updDir) {
+	    // Add -1, 0 or 1 but bind result to 1 to 1.
+	    xfc = constrain(xfc + random(-1, 2), 1, 16);
+	    yfc = constrain(xfc + random(-1, 2), 1, 16);
+	}
+	delay(20);
+    }
+}
+
 
 void loop() {
     // clear the screen after X bitmaps have been displayed and we
@@ -480,58 +475,60 @@ void loop() {
     // 8x8 => 1, 16x8 => 2, 17x9 => 6
     static uint8_t pixmap_count = ((mw+7)/8) * ((mh+7)/8);
     uint16_t bmpcolor[] = { LED_GREEN_HIGH, LED_BLUE_HIGH, LED_RED_HIGH };
-    uint16_t scandelay[] = { 5, 50, 200, 1000 };
 
     Serial.print("Screen pixmap capacity: ");
     Serial.println(pixmap_count);
-    display_matrix(RGB_BITMAP, 0);
 
     // multicolor bitmap sent as many times as we can display an 8x8 pixmap
     for (uint8_t i=0; i<=pixmap_count; i++)
     {
-	display_matrix(RGB_BITMAP, 0);
+	display_rgbBitmap(0);
     }
 
     // Cycle through red, green, blue, display 2 checkered patterns
     // useful to debug some screen types and alignment.
     for (uint8_t i=0; i<3; i++)
     {
-	display_matrix(BITMAP, 3 + (i % 2), bmpcolor[i]);
+	display_bitmap(3 + (i % 2), bmpcolor[i]);
  	delay(500);
-	display_matrix(BITMAP, 4 - (i % 2), bmpcolor[i]);
+	display_bitmap(4 - (i % 2), bmpcolor[i]);
  	delay(500);
     }
 
     for (uint8_t i=0; i<=2; i++)
     {
-	display_matrix(BITMAP, i, bmpcolor[i]);
+	display_bitmap(i, bmpcolor[i]);
 	delay(mw>8?500:1500);
     }
     // If we have multiple pixmaps displayed at once, wait a bit longer.
     delay(mw>8?1500:500);
 
-    display_matrix(LINES);
+    display_lines();
     delay(3000);
 
-    display_matrix(BOXES);
+    display_boxes();
     delay(3000);
 
+    display_circles();
+    delay(3000);
 
     for (uint8_t i=0; i<=(sizeof(RGB_bmp)/sizeof(RGB_bmp[0])-1); i++)
     {
-	display_matrix(RGB_BITMAP, i);
+	display_rgbBitmap(i);
 	delay(mw>8?500:1500);
     }
 
-    // Fill the screen with multiple levels of white to guage the quality
-    display_matrix(FOUR_WHITE, 0);
+    display_four_white();
     delay(3000);
 
-    display_matrix(SCROLLTEXT);
+    display_scrollText();
     delay(2000);
 
-    display_matrix(BOUNCE_BITMAP, 0);
+    display_panBitmap();
     delay(2000);
+
+    //display_matrix(BOUNCE_BITMAP, 0);
+    //delay(2000);
 }
 
 // vim:sts=4:sw=4
