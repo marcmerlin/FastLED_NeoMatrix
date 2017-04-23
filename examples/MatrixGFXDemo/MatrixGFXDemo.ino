@@ -8,13 +8,17 @@
 
 // Choose your prefered pixmap
 //#include "heart24.h"
-#include "yellowsmiley24.h"
-//#include "bluesmiley24.h"
+//#include "yellowsmiley24.h"
+#include "bluesmiley24.h"
 #ifndef PSTR
  #define PSTR // Make Arduino Due happy
 #endif
 
 #define PIN 6
+
+// Max is 255, 32 is a conservative value to not overload
+// a USB power supply (500mA) for 12x12 pixels.
+#define BRIGHTNESS 64
 
 // Define matrix height and width.
 uint16_t mw = 12;
@@ -273,19 +277,6 @@ static const uint16_t PROGMEM
 };
 
 
-void setup() {
-    Serial.begin(115200);
-    matrix->begin();
-    matrix->setTextWrap(false);
-    //matrix->setBrightness(255);
-    matrix->setBrightness(32);
-    matrix->fillScreen(LED_ORANGE_HIGH);
-    matrix->show();
-    delay(1000);
-    matrix->clear();
-}
-
-
 // Convert a BGR 4/4/4 bitmap to RGB 5/6/5 used by Adafruit_GFX
 void fixdrawRGBBitmap(int16_t x, int16_t y, const uint16_t *bitmap, int16_t w, int16_t h) {
     uint16_t RGB_bmp_fixed[w * h];
@@ -420,7 +411,7 @@ void display_scrollText() {
 
     matrix->setRotation(3);
     matrix->setTextColor(LED_BLUE_HIGH);
-    for (int8_t x=7; x>=-60; x--) {
+    for (int8_t x=7; x>=-80; x--) {
 	matrix->clear();
 	matrix->setCursor(x,mh/2-4);
 	matrix->print("Sideways Too!");
@@ -432,39 +423,50 @@ void display_scrollText() {
     matrix->show();
 }
 
+// Scroll within big bitmap so that all if it becomes visible.
 void display_panBitmap () {
     // keep integer math, deal with values 16 times too big
-    int16_t xf = (mw/2-4) << 4;
-    int16_t yf = (mh/2-4) << 4;
-    int16_t xfc = random(16);
-    int16_t yfc = random(16);
-    int16_t xfdir = 1;
-    int16_t yfdir = 1;
+    uint8_t panBitmapSize = 24;
+    
+    //int16_t xf = (mw/2-4) << 4;
+    //int16_t yf = (mh/2-4) << 4;
+    // start by showing upper left of big bitmap
+    int16_t xf = 0;
+    int16_t yf = 0;
+    // scroll speed in 1/16th
+    int16_t xfc = 6;
+    int16_t yfc = 3;
+    // scroll down and right by moving upper left corner off screen 
+    // more up and left (which means negative numbers)
+    int16_t xfdir = -1;
+    int16_t yfdir = -1;
 
-    for (uint8_t i=1; i<255; i++) {
+    for (uint16_t i=1; i<1000; i++) {
 	bool updDir = false;
 
-	// and then dvide by 16 here.
+	// Get actual x/y by dividing by 16.
 	int16_t x = xf >> 4;
 	int16_t y = yf >> 4;
 
 	matrix->clear();
-	matrix->drawRGBBitmap(x, y, bitmap24, 24, 24, true);
+	matrix->drawRGBBitmap(x, y, bitmap24, panBitmapSize, panBitmapSize, true);
 	matrix->show();
 	 
 	xf += xfc*xfdir;
 	yf += yfc*yfdir;
-	// Deal with bouncing off the 'walls'
-	if (xf >= ((mw-8) << 4)) { xfdir *= -1; updDir = true ; };
-	if (xf <= ((mw-24) << 4)) { xfdir *= -1; updDir = true ; };
-	if (yf >= ((mh-8) << 4)) { yfdir *= -1; updDir = true ; };
-	if (yf <= ((mh-24) << 4)) { yfdir *= -1; updDir = true ; };
+	
+	// we shouldn't display past left corner, reverse direction.
+	if (xf >= 0)                         { xfdir = -1; updDir = true ; };
+	// we don't go negative past right corner, go back positive
+	if (xf <= ((mw-panBitmapSize) << 4)) { xfdir = 1;  updDir = true ; };
+	if (yf >= 0)                         { yfdir = -1; updDir = true ; };
+	if (yf <= ((mh-panBitmapSize) << 4)) { yfdir = 1;  updDir = true ; };
 	if (updDir) {
 	    // Add -1, 0 or 1 but bind result to 1 to 1.
 	    xfc = constrain(xfc + random(-1, 2), 1, 16);
 	    yfc = constrain(xfc + random(-1, 2), 1, 16);
 	}
-	delay(20);
+	delay(10);
     }
 }
 
@@ -501,7 +503,7 @@ void loop() {
 	delay(mw>8?500:1500);
     }
     // If we have multiple pixmaps displayed at once, wait a bit longer.
-    delay(mw>8?1500:500);
+    delay(mw>8?1000:500);
 
     display_lines();
     delay(3000);
@@ -522,13 +524,25 @@ void loop() {
     delay(3000);
 
     display_scrollText();
-    delay(2000);
 
     display_panBitmap();
     delay(2000);
 
     //display_matrix(BOUNCE_BITMAP, 0);
     //delay(2000);
+}
+
+void setup() {
+    Serial.begin(115200);
+    matrix->begin();
+    matrix->setTextWrap(false);
+    matrix->setBrightness(BRIGHTNESS);
+    // Test full bright of all LEDs. If brightness is too high
+    // for your current limit (i.e. USB), decrease it.
+    matrix->fillScreen(LED_WHITE_HIGH);
+    matrix->show();
+    delay(1000);
+    matrix->clear();
 }
 
 // vim:sts=4:sw=4
