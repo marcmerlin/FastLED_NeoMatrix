@@ -9,7 +9,8 @@
 // Choose your prefered pixmap
 //#include "heart24.h"
 //#include "yellowsmiley24.h"
-#include "bluesmiley24.h"
+//#include "bluesmiley24.h"
+#include "smileytongue24.h"
 #ifndef PSTR
  #define PSTR // Make Arduino Due happy
 #endif
@@ -28,8 +29,8 @@
 #define BRIGHTNESS 96
 
 // Define matrix width and height.
-#define mw 16
-#define mh 8
+#define mw 24
+#define mh 24
 
 // MATRIX DECLARATION:
 // Parameter 1 = width of EACH NEOPIXEL MATRIX (not total display)
@@ -392,10 +393,61 @@ void display_boxes() {
 void display_circles() {
     matrix->clear();
     matrix->drawCircle(mw/2,mh/2, 2, LED_RED_MEDIUM);
-    matrix->drawCircle(mw/2-3,mh/2-3, 2, LED_BLUE_HIGH);
-    matrix->drawCircle(mw/2+3,mh/2+3, 2, LED_ORANGE_MEDIUM);
+    matrix->drawCircle(mw/2-1-min(mw,mh)/8, mh/2-1-min(mw,mh)/8, min(mw,mh)/4, LED_BLUE_HIGH);
+    matrix->drawCircle(mw/2+1+min(mw,mh)/8, mh/2+1+min(mw,mh)/8, min(mw,mh)/4-1, LED_ORANGE_MEDIUM);
     matrix->drawCircle(1,mh-2, 1, LED_GREEN_LOW);
     matrix->drawCircle(mw-2,1, 1, LED_GREEN_HIGH);
+    if (min(mw,mh)>12) matrix->drawCircle(mw/2-1, mh/2-1, min(mh/2-1,mw/2-1), LED_CYAN_HIGH);
+    matrix->show();
+}
+
+void display_resolution() {
+    // not wide enough;
+    if (mw<16) return;
+    matrix->clear();
+    // Font is 5x7, if display is too small
+    // 8 can only display 1 char
+    // 16 can almost display 3 chars
+    // 24 can display 4 chars
+    // 32 can display 5 chars
+    matrix->setCursor(0, 0);
+    matrix->setTextColor(matrix->Color(255,0,0));
+    if (mw>10) matrix->print(mw/10);
+    matrix->setTextColor(matrix->Color(255,128,0)); 
+    matrix->print(mw % 10);
+    matrix->setTextColor(matrix->Color(0,255,0));
+    matrix->print('x');
+    // not wide enough to print 5 chars, go to next line
+    if (mw<25) {
+	if (mh==13) matrix->setCursor(6, 7);
+	else if (mh>=13) {
+	    matrix->setCursor(mw-11, 8);
+	} else {
+	    matrix->show();
+	    delay(2000);
+	    matrix->clear();
+	    matrix->setCursor(mw-11, 0);
+	}   
+    }
+    matrix->setTextColor(matrix->Color(0,255,128)); 
+    matrix->print(mh/10);
+    matrix->setTextColor(matrix->Color(0,128,255));  
+    matrix->print(mh % 10);
+    // enough room for a 2nd line
+    if (mw>25 && mh >14 || mh>16) {
+	matrix->setCursor(0, mh-7);
+	matrix->setTextColor(matrix->Color(0,255,255)); 
+	if (mw>16) matrix->print('*');
+	matrix->setTextColor(matrix->Color(255,0,0)); 
+	matrix->print('R');
+	matrix->setTextColor(matrix->Color(0,255,0));
+	matrix->print('G');
+	matrix->setTextColor(matrix->Color(0,0,255)); 
+	matrix->print("B");
+	matrix->setTextColor(matrix->Color(255,255,0)); 
+	matrix->print("*");
+    }
+    
     matrix->show();
 }
 
@@ -420,10 +472,10 @@ void display_scrollText() {
 
     matrix->setRotation(3);
     matrix->setTextColor(LED_BLUE_HIGH);
-    for (int8_t x=7; x>=-80; x--) {
+    for (int8_t x=7; x>=-45; x--) {
 	matrix->clear();
-	matrix->setCursor(x,mh/2-4);
-	matrix->print("Sideways Too!");
+	matrix->setCursor(x,mw/2-4);
+	matrix->print("Rotate");
 	matrix->show();
        delay(50);
     }
@@ -432,11 +484,10 @@ void display_scrollText() {
     matrix->show();
 }
 
-// Scroll within big bitmap so that all if it becomes visible.
-void display_panOrBounceBitmap (bool pan) {
-    uint8_t bitmapSize = 8;
-    if (pan) bitmapSize = 24;
-    
+// Scroll within big bitmap so that all if it becomes visible or bounce a small one.
+// If the bitmap is bigger in one dimention and smaller in the other one, it will
+// be both panned and bounced in the appropriate dimentions.
+void display_panOrBounceBitmap (uint8_t bitmapSize) {
     // keep integer math, deal with values 16 times too big
     // start by showing upper left of big bitmap or centering if the display is big
     int16_t xf = max(0, (mw-bitmapSize)/2) << 4;
@@ -458,39 +509,43 @@ void display_panOrBounceBitmap (bool pan) {
 
 	matrix->clear();
 	// bounce 8x8 tri color smiley face around the screen
-	if (!pan) fixdrawRGBBitmap(x, y, RGB_bmp[10], 8, 8);
+	if (bitmapSize == 8) fixdrawRGBBitmap(x, y, RGB_bmp[10], 8, 8);
 	// pan 24x24 pixmap
-	if (pan) matrix->drawRGBBitmap(x, y, bitmap24, bitmapSize, bitmapSize, true);
+	if (bitmapSize == 24) matrix->drawRGBBitmap(x, y, bitmap24, bitmapSize, bitmapSize, true);
 	matrix->show();
 	 
 	// Only pan if the display size is smaller than the pixmap
-	if (pan) {
-	    if (mw<bitmapSize) xf += xfc*xfdir;
-	    if (mh<bitmapSize) yf += yfc*yfdir;
-	} else {
-	    // only bounce a pixmap if it's smaller than the display size
-	    if (mw>bitmapSize) xf += xfc*xfdir;
-	    if (mh>bitmapSize) yf += yfc*yfdir;
-	}
-	
-	if (pan) {
-	    // we shouldn't display past left corner, reverse direction.
-	    if (xf >= 0)                         { xfdir = -1; updDir = true ; };
+	// but not if the difference is too small or it'll look bad.
+	if (bitmapSize-mw>2) {
+	    if (mw>9) xf += xfc*xfdir;
+	    if (xf >= 0)                      { xfdir = -1; updDir = true ; };
 	    // we don't go negative past right corner, go back positive
 	    if (xf <= ((mw-bitmapSize) << 4)) { xfdir = 1;  updDir = true ; };
-	    if (yf >= 0)                         { yfdir = -1; updDir = true ; };
+	}
+	if (bitmapSize-mh>2) {
+	    yf += yfc*yfdir;
+	    // we shouldn't display past left corner, reverse direction.
+	    if (yf >= 0)                      { yfdir = -1; updDir = true ; };
 	    if (yf <= ((mh-bitmapSize) << 4)) { yfdir = 1;  updDir = true ; };
-	} else {
+	}
+	// only bounce a pixmap if it's smaller than the display size
+	if (mw>bitmapSize) {
+	    xf += xfc*xfdir;
 	    // Deal with bouncing off the 'walls'
-	    if (xf >= (mw-8) << 4) { xfdir = -1; updDir = true ; };
+	    if (xf >= (mw-bitmapSize) << 4) { xfdir = -1; updDir = true ; };
 	    if (xf <= 0)           { xfdir =  1; updDir = true ; };
-	    if (yf >= (mh-8) << 4) { yfdir = -1; updDir = true ; };
+	}
+	if (mh>bitmapSize) {
+	    yf += yfc*yfdir;
+	    if (yf >= (mh-bitmapSize) << 4) { yfdir = -1; updDir = true ; };
 	    if (yf <= 0)           { yfdir =  1; updDir = true ; };
 	}
+	
 	if (updDir) {
 	    // Add -1, 0 or 1 but bind result to 1 to 1.
-	    xfc = constrain(xfc + random(-1, 2), 1, 16);
-	    yfc = constrain(xfc + random(-1, 2), 1, 16);
+	    // Let's take 3 is a minimum speed, otherwise it's too slow.
+	    xfc = constrain(xfc + random(-1, 2), 3, 16);
+	    yfc = constrain(xfc + random(-1, 2), 3, 16);
 	}
 	delay(10);
     }
@@ -505,6 +560,7 @@ void loop() {
 
     Serial.print("Screen pixmap capacity: ");
     Serial.println(pixmap_count);
+    delay(3000);
 
     // multicolor bitmap sent as many times as we can display an 8x8 pixmap
     for (uint8_t i=0; i<=pixmap_count; i++)
@@ -512,6 +568,9 @@ void loop() {
 	display_rgbBitmap(0);
     }
     delay(1000);
+
+    display_resolution();
+    delay(3000);
 
     // Cycle through red, green, blue, display 2 checkered patterns
     // useful to debug some screen types and alignment.
@@ -541,6 +600,7 @@ void loop() {
     delay(3000);
 
     display_circles();
+    matrix->clear();
     delay(3000);
 
     for (uint8_t i=0; i<=(sizeof(RGB_bmp)/sizeof(RGB_bmp[0])-1); i++)
@@ -557,9 +617,9 @@ void loop() {
     display_scrollText();
 
     // pan a big pixmap
-    display_panOrBounceBitmap(true);
+    display_panOrBounceBitmap(24);
     // bounce around a small one
-    display_panOrBounceBitmap(false);
+    display_panOrBounceBitmap(8);
 }
 
 void setup() {
