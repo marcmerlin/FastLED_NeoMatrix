@@ -485,8 +485,8 @@ void display_scrollText() {
 }
 
 // Scroll within big bitmap so that all if it becomes visible or bounce a small one.
-// If the bitmap is bigger in one dimention and smaller in the other one, it will
-// be both panned and bounced in the appropriate dimentions.
+// If the bitmap is bigger in one dimension and smaller in the other one, it will
+// be both panned and bounced in the appropriate dimensions.
 void display_panOrBounceBitmap (uint8_t bitmapSize) {
     // keep integer math, deal with values 16 times too big
     // start by showing upper left of big bitmap or centering if the display is big
@@ -560,7 +560,6 @@ void loop() {
 
     Serial.print("Screen pixmap capacity: ");
     Serial.println(pixmap_count);
-    delay(3000);
 
     // multicolor bitmap sent as many times as we can display an 8x8 pixmap
     for (uint8_t i=0; i<=pixmap_count; i++)
