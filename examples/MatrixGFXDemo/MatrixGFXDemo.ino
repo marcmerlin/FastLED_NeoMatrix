@@ -26,11 +26,7 @@
 
 // Max is 255, 32 is a conservative value to not overload
 // a USB power supply (500mA) for 12x12 pixels.
-#define BRIGHTNESS 96
-
-// Define matrix width and height.
-#define mw 24
-#define mh 24
+#define BRIGHTNESS 255
 
 // MATRIX DECLARATION:
 // Parameter 1 = width of EACH NEOPIXEL MATRIX (not total display)
@@ -66,10 +62,29 @@
 //   NEO_KHZ400  400 KHz bitstream (e.g. FLORA v1 pixels)
 //   NEO_KHZ800  800 KHz bitstream (e.g. High Density LED strip)
 
-Adafruit_NeoMatrix *matrix = new Adafruit_NeoMatrix(mw, mh, PIN,
-  NEO_MATRIX_TOP     + NEO_MATRIX_LEFT +
-  NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG,
-  NEO_GRB            + NEO_KHZ800);
+//#define P32BY8X4
+#ifdef P32BY8X4
+// Define matrix width and height.
+#define mw 32
+#define mh 32
+Adafruit_NeoMatrix *matrix = new Adafruit_NeoMatrix(mw/4, mh, 
+  4, 1, 
+  PIN,
+  NEO_MATRIX_TOP     + NEO_MATRIX_RIGHT +
+    NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG + 
+// progressive vs zigzag makes no difference for a 4 arrays next to one another
+    NEO_TILE_TOP + NEO_TILE_LEFT +  NEO_TILE_PROGRESSIVE,
+  NEO_GRB            + NEO_KHZ800 );
+#else
+// Define matrix width and height.
+#define mw 24
+#define mh 24
+Adafruit_NeoMatrix *matrix = new Adafruit_NeoMatrix(mw, mh, 
+  PIN,
+  NEO_MATRIX_TOP     + NEO_MATRIX_RIGHT +
+    NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG,
+  NEO_GRB            + NEO_KHZ800 );
+#endif
 
 // This could also be defined as matrix->color(255,0,0) but those defines
 // are meant to work for adafruit_gfx backends that are lacking color()
@@ -321,6 +336,21 @@ void fixdrawRGBBitmap(int16_t x, int16_t y, const uint16_t *bitmap, int16_t w, i
     matrix->drawRGBBitmap(x, y, RGB_bmp_fixed, w, h);
 }
 
+// In a case of a tile of neomatrices, this test is helpful to make sure that the
+// pixels are all in sequence (to check your wiring order and the tile options you
+// gave to the constructor).
+void count_pixels() {
+    matrix->clear();
+    for (uint16_t i=0; i<mh; i++) {
+	for (uint16_t j=0; j<mw; j++) {
+	    matrix->drawPixel(j, i, i%3==0?LED_BLUE_HIGH:i%3==1?LED_RED_HIGH:LED_GREEN_HIGH);
+	    // depending on the matrix size, it's too slow to display each pixel, so
+	    // make the scan init faster. This will however be too fast on a small matrix.
+	    if (!(j%7)) matrix->show();
+	}
+    }
+}
+
 // Fill the screen with multiple levels of white to gauge the quality
 void display_four_white() {
     matrix->clear();
@@ -514,7 +544,7 @@ void display_panOrBounceBitmap (uint8_t bitmapSize) {
 	// Only pan if the display size is smaller than the pixmap
 	// but not if the difference is too small or it'll look bad.
 	if (bitmapSize-mw>2) {
-	    if (mw>9) xf += xfc*xfdir;
+	    xf += xfc*xfdir;
 	    if (xf >= 0)                      { xfdir = -1; updDir = true ; };
 	    // we don't go negative past right corner, go back positive
 	    if (xf <= ((mw-bitmapSize) << 4)) { xfdir = 1;  updDir = true ; };
@@ -554,6 +584,12 @@ void loop() {
     // loop back to the top left corner
     // 8x8 => 1, 16x8 => 2, 17x9 => 6
     static uint8_t pixmap_count = ((mw+7)/8) * ((mh+7)/8);
+
+    count_pixels();
+    delay(1000);
+
+    display_four_white();
+    delay(3000);
 
     Serial.print("Screen pixmap capacity: ");
     Serial.println(pixmap_count);
@@ -607,9 +643,6 @@ void loop() {
     // If we have multiple pixmaps displayed at once, wait a bit longer on the last.
     delay(mw>8?1000:500);
 
-    display_four_white();
-    delay(3000);
-
     display_scrollText();
 
     // pan a big pixmap
@@ -627,7 +660,7 @@ void setup() {
     // for your current limit (i.e. USB), decrease it.
     matrix->fillScreen(LED_WHITE_HIGH);
     matrix->show();
-    delay(1000);
+    delay(3000);
     matrix->clear();
 }
 
