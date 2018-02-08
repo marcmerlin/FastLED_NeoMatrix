@@ -24,8 +24,9 @@
 #define PIN RX
 #endif
 
-#define P32BY8X4
-#ifdef P32BY8X4
+//#define P32BY8X4
+#define P16BY16X4
+#if defined(P32BY8X4) || defined(P16BY16X4)
 #define BM32
 #endif
 
@@ -74,7 +75,7 @@
 //   NEO_KHZ800  800 KHz bitstream (e.g. High Density LED strip)
 
 #ifdef P32BY8X4
-// Define matrix width and height.
+// Define full matrix width and height.
 #define mw 32
 #define mh 32
 Adafruit_NeoMatrix *matrix = new Adafruit_NeoMatrix(8, mh, 
@@ -85,10 +86,20 @@ Adafruit_NeoMatrix *matrix = new Adafruit_NeoMatrix(8, mh,
 // progressive vs zigzag makes no difference for a 4 arrays next to one another
     NEO_TILE_TOP + NEO_TILE_LEFT +  NEO_TILE_PROGRESSIVE,
   NEO_GRB            + NEO_KHZ800 );
+#elif defined(P16BY16X4)
+#define mw 32
+#define mh 32
+Adafruit_NeoMatrix *matrix = new Adafruit_NeoMatrix(16, mh, 
+  mw/16, mh/16, 
+  PIN,
+  NEO_MATRIX_TOP     + NEO_MATRIX_RIGHT +
+    NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG + 
+    NEO_TILE_TOP + NEO_TILE_LEFT +  NEO_TILE_ZIGZAG,
+  NEO_GRB            + NEO_KHZ800 );
 #else
 // Define matrix width and height.
-#define mw 24
-#define mh 24
+#define mw 16
+#define mh 16
 Adafruit_NeoMatrix *matrix = new Adafruit_NeoMatrix(mw, mh, 
   PIN,
   NEO_MATRIX_TOP     + NEO_MATRIX_RIGHT +
@@ -439,6 +450,7 @@ void display_circles() {
 }
 
 void display_resolution() {
+    matrix->setTextSize(1);
     // not wide enough;
     if (mw<16) return;
     matrix->clear();
@@ -549,7 +561,7 @@ void display_panOrBounceBitmap (uint8_t bitmapSize) {
     int16_t xfdir = -1;
     int16_t yfdir = -1;
 
-    for (uint16_t i=1; i<1000; i++) {
+    for (uint16_t i=1; i<200; i++) {
 	bool updDir = false;
 
 	// Get actual x/y by dividing by 16.
@@ -561,7 +573,9 @@ void display_panOrBounceBitmap (uint8_t bitmapSize) {
 	if (bitmapSize == 8) fixdrawRGBBitmap(x, y, RGB_bmp[10], 8, 8);
 	// pan 24x24 pixmap
 	if (bitmapSize == 24) matrix->drawRGBBitmap(x, y, (const uint16_t *) bitmap24, bitmapSize, bitmapSize);
+#ifdef BM32
 	if (bitmapSize == 32) matrix->drawRGBBitmap(x, y, (const uint16_t *) bitmap32, bitmapSize, bitmapSize);
+#endif
 	matrix->show();
 	 
 	// Only pan if the display size is smaller than the pixmap
@@ -608,8 +622,18 @@ void loop() {
     // 8x8 => 1, 16x8 => 2, 17x9 => 6
     static uint8_t pixmap_count = ((mw+7)/8) * ((mh+7)/8);
 
-    display_panOrBounceBitmap(32);
-return;
+// You can't use millis to time frame fresh rate because it uses cli() which breaks millis()
+// So I use my stopwatch to count 200 displays and that's good enough
+#if 0
+    // 200 displays in 13 seconds = 15 frames per second for 4096 pixels
+    for (uint8_t i=0; i<100; i++) { 
+	matrix->fillScreen(LED_BLUE_LOW);
+	matrix->show();
+	matrix->fillScreen(LED_RED_LOW);
+	matrix->show();
+    }
+#endif
+
     count_pixels();
     delay(1000);
 
