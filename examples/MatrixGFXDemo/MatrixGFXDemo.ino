@@ -38,7 +38,7 @@
 
 // Max is 255, 32 is a conservative value to not overload
 // a USB power supply (500mA) for 12x12 pixels.
-#define BRIGHTNESS 8
+#define BRIGHTNESS 32
 
 // MATRIX DECLARATION:
 // Parameter 1 = width of EACH NEOPIXEL MATRIX (not total display)
@@ -638,12 +638,10 @@ void loop() {
     }
 #endif
 
-    Serial.println("Hellom");
     count_pixels();
     delay(1000);
     Serial.println("");
 
-    Serial.println("Helloh");
     display_four_white();
     delay(3000);
 
@@ -712,10 +710,10 @@ void loop() {
 
 void setup() {
     Serial.begin(115200);
-  Serial.print("Matrix Size: ");
-  Serial.print(mw);
-  Serial.print(" ");
-  Serial.println(mh);
+    Serial.print("Matrix Size: ");
+    Serial.print(mw);
+    Serial.print(" ");
+    Serial.println(mh);
     matrix->begin();
     matrix->setTextWrap(false);
     matrix->setBrightness(BRIGHTNESS);

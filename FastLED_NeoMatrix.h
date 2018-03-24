@@ -62,19 +62,25 @@
 #define NEO_TILE_ZIGZAG        0x80 // Tile order reverses between lines
 #define NEO_TILE_SEQUENCE      0x80 // Bitmask for tile line order
 
+// TODO: support more than NEOPIXEL types, add types here and modify 
+// FastLED_NeoMatrix::FastLED_NeoMatrix accordingly
+#define NEO_TYPE_NEOPIXEL      0x01 // FastLED NEOPIXEL type
+
 class FastLED_NeoMatrix : public Adafruit_GFX, public CFastLED {
 
  public:
 
   // Constructor for single matrix:
   FastLED_NeoMatrix(int w, int h, uint8_t pin = 6,
-    uint8_t matrixType = NEO_MATRIX_TOP + NEO_MATRIX_LEFT + NEO_MATRIX_ROWS);
+    uint8_t matrixType = NEO_MATRIX_TOP + NEO_MATRIX_LEFT + NEO_MATRIX_ROWS, 
+    uint8_t ledType = NEO_TYPE_NEOPIXEL);
 
   // Constructor for tiled matrices:
   FastLED_NeoMatrix(uint8_t matrixW, uint8_t matrixH, uint8_t tX,
     uint8_t tY, uint8_t pin = 6,
     uint8_t matrixType = NEO_MATRIX_TOP + NEO_MATRIX_LEFT + NEO_MATRIX_ROWS +
-                         NEO_TILE_TOP + NEO_TILE_LEFT + NEO_TILE_ROWS);
+                         NEO_TILE_TOP + NEO_TILE_LEFT + NEO_TILE_ROWS, 
+    uint8_t ledType = NEO_TYPE_NEOPIXEL);
 
   void
     drawPixel(int16_t x, int16_t y, uint16_t color),
@@ -92,19 +98,14 @@ class FastLED_NeoMatrix : public Adafruit_GFX, public CFastLED {
 //    CFastLED::show();
 //  };
 
-  void begin() {
-    Serial.print("numpix: ");
-    Serial.println(numpix);
-    Serial.print("malloc size: ");
-    Serial.println(_malloc_size);
-  };
+  void begin();
 
  private:
 
   CRGB *leds;
   //CRGB leds[256];
   const uint8_t
-    type;
+    pin, type, ledType;
   const uint8_t
     matrixWidth, matrixHeight, tilesX, tilesY;
   uint16_t
@@ -117,3 +118,4 @@ class FastLED_NeoMatrix : public Adafruit_GFX, public CFastLED {
 };
 
 #endif // _FASTLED_NEOMATRIX_H_
+// vim:sts=2:sw=2
