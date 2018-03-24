@@ -1,6 +1,8 @@
 /*--------------------------------------------------------------------
-  This file is part of the Adafruit NeoMatrix library.
+  Arduino library based on Adafruit_Neomatrix but modified to work with FastLED
+  by Marc MERLIN <marc_soft@merlins.org>
 
+  Original notice and license from Adafruit_Neomatrix:
   NeoMatrix is free software: you can redistribute it and/or modify
   it under the terms of the GNU Lesser General Public License as
   published by the Free Software Foundation, either version 3 of

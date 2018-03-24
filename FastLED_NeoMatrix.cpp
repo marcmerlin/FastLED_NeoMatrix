@@ -1,4 +1,8 @@
 /*-------------------------------------------------------------------------
+  Arduino library based on Adafruit_Neomatrix but modified to work with FastLED
+  by Marc MERLIN <marc_soft@merlins.org>
+
+  Original notice and license from Adafruit_Neomatrix:
   Arduino library to control single and tiled matrices of WS2811- and
   WS2812-based RGB LED devices such as the Adafruit NeoPixel Shield or
   displays assembled from NeoPixel strips, making them compatible with
