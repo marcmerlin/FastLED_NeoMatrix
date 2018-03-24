@@ -358,15 +358,10 @@ void fixdrawRGBBitmap(int16_t x, int16_t y, const uint16_t *bitmap, int16_t w, i
 // pixels are all in sequence (to check your wiring order and the tile options you
 // gave to the constructor).
 void count_pixels() {
-    //matrix->clear();
+    matrix->clear();
     for (uint16_t i=0; i<mh; i++) {
 	for (uint16_t j=0; j<mw; j++) {
-	    //Serial.print(">");
 	    matrix->drawPixel(j, i, i%3==0?LED_BLUE_HIGH:i%3==1?LED_RED_HIGH:LED_GREEN_HIGH);
-	    //Serial.print(i);
-	    //Serial.print(" ");
-	    //Serial.print(j);
-	    //Serial.print("_");
 	    // depending on the matrix size, it's too slow to display each pixel, so
 	    // make the scan init faster. This will however be too fast on a small matrix.
 	    //if (!(j%7)) matrix->show();
@@ -717,12 +712,15 @@ void setup() {
     matrix->begin();
     matrix->setTextWrap(false);
     matrix->setBrightness(BRIGHTNESS);
+    Serial.println("If the code crashes here, decrease the brightness or turn off the all white display below");
     // Test full bright of all LEDs. If brightness is too high
     // for your current limit (i.e. USB), decrease it.
-    //matrix->fillScreen(LED_WHITE_HIGH);
-    //matrix->show();
-    //delay(3000);
-    //matrix->clear();
+#ifndef DISABLE_WHITE
+    matrix->fillScreen(LED_WHITE_HIGH);
+    matrix->show();
+    delay(3000);
+    matrix->clear();
+#endif
 }
 
 // vim:sts=4:sw=4

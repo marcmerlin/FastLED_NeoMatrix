@@ -103,7 +103,6 @@ class FastLED_NeoMatrix : public Adafruit_GFX, public CFastLED {
  private:
 
   CRGB *leds;
-  //CRGB leds[256];
   const uint8_t
     pin, type, ledType;
   const uint8_t

@@ -54,6 +54,7 @@ FastLED_NeoMatrix::FastLED_NeoMatrix(int w, int h, uint8_t pin, uint8_t matrixTy
   Adafruit_GFX(w, h),
   CFastLED(),
   pin(pin), type(matrixType), ledType(ledType), matrixWidth(w), matrixHeight(h), tilesX(0), tilesY(0), remapFn(NULL) { 
+    // WARNING: Serial.print seems to crash in the constructor, but works in begin()
   }
 
 // Constructor for tiled matrices:
@@ -75,7 +76,6 @@ FastLED_NeoMatrix::FastLED_NeoMatrix(uint8_t mW, uint8_t mH, uint8_t tX, uint8_t
     if (! (leds = (CRGB *) malloc(_malloc_size)))
     {
 	while (1) {
-	    // FIXME: Serial.print seems to crash in the constructor, but works in begin()
 	    Serial.println(F("Malloc failed for LED Matrix"));
 	}
     }
