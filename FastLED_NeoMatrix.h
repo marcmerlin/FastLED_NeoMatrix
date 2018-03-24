@@ -16,8 +16,8 @@
   <http://www.gnu.org/licenses/>.
   --------------------------------------------------------------------*/
 
-#ifndef _ADAFRUIT_NEOMATRIX_H_
-#define _ADAFRUIT_NEOMATRIX_H_
+#ifndef _FASTLED_NEOMATRIX_H_
+#define _FASTLED_NEOMATRIX_H_
 
 #if ARDUINO >= 100
  #include <Arduino.h>
@@ -26,7 +26,7 @@
  #include <pins_arduino.h>
 #endif
 #include <Adafruit_GFX.h>
-#include <Adafruit_NeoPixel.h>
+#include <FastLED.h>
 
 // Matrix layout information is passed in the 'matrixType' parameter for
 // each constructor (the parameter immediately following is the LED type
@@ -62,21 +62,19 @@
 #define NEO_TILE_ZIGZAG        0x80 // Tile order reverses between lines
 #define NEO_TILE_SEQUENCE      0x80 // Bitmask for tile line order
 
-class Adafruit_NeoMatrix : public Adafruit_GFX, public Adafruit_NeoPixel {
+class FastLED_NeoMatrix : public Adafruit_GFX, public CFastLED {
 
  public:
 
   // Constructor for single matrix:
-  Adafruit_NeoMatrix(int w, int h, uint8_t pin = 6,
-    uint8_t matrixType = NEO_MATRIX_TOP + NEO_MATRIX_LEFT + NEO_MATRIX_ROWS,
-    neoPixelType ledType = NEO_GRB + NEO_KHZ800);
+  FastLED_NeoMatrix(int w, int h, uint8_t pin = 6,
+    uint8_t matrixType = NEO_MATRIX_TOP + NEO_MATRIX_LEFT + NEO_MATRIX_ROWS);
 
   // Constructor for tiled matrices:
-  Adafruit_NeoMatrix(uint8_t matrixW, uint8_t matrixH, uint8_t tX,
+  FastLED_NeoMatrix(uint8_t matrixW, uint8_t matrixH, uint8_t tX,
     uint8_t tY, uint8_t pin = 6,
     uint8_t matrixType = NEO_MATRIX_TOP + NEO_MATRIX_LEFT + NEO_MATRIX_ROWS +
-                         NEO_TILE_TOP + NEO_TILE_LEFT + NEO_TILE_ROWS,
-    neoPixelType ledType = NEO_GRB + NEO_KHZ800);
+                         NEO_TILE_TOP + NEO_TILE_LEFT + NEO_TILE_ROWS);
 
   void
     drawPixel(int16_t x, int16_t y, uint16_t color),
@@ -88,17 +86,34 @@ class Adafruit_NeoMatrix : public Adafruit_GFX, public Adafruit_NeoPixel {
   static uint16_t
     Color(uint8_t r, uint8_t g, uint8_t b);
 
+//  void show() {
+//    Serial.print("Show numpix ");
+//    Serial.println(numpix);
+//    CFastLED::show();
+//  };
+
+  void begin() {
+    Serial.print("numpix: ");
+    Serial.println(numpix);
+    Serial.print("malloc size: ");
+    Serial.println(_malloc_size);
+  };
+
  private:
 
+  CRGB *leds;
+  //CRGB leds[256];
   const uint8_t
     type;
   const uint8_t
     matrixWidth, matrixHeight, tilesX, tilesY;
   uint16_t
+    numpix,
     (*remapFn)(uint16_t x, uint16_t y);
+  uint32_t _malloc_size;
 
   uint32_t passThruColor;
   boolean  passThruFlag = false;
 };
 
-#endif // _ADAFRUIT_NEOMATRIX_H_
+#endif // _FASTLED_NEOMATRIX_H_

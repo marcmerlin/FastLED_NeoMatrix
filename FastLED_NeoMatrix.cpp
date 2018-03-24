@@ -2,7 +2,7 @@
   Arduino library to control single and tiled matrices of WS2811- and
   WS2812-based RGB LED devices such as the Adafruit NeoPixel Shield or
   displays assembled from NeoPixel strips, making them compatible with
-  the Adafruit_GFX graphics library.  Requires both the Adafruit_NeoPixel
+  the Adafruit_GFX graphics library.  Requires both the FastLED_NeoPixel
   and Adafruit_GFX libraries.
 
   Written by Phil Burgess / Paint Your Dragon for Adafruit Industries.
@@ -29,8 +29,9 @@
   <http://www.gnu.org/licenses/>.
   -------------------------------------------------------------------------*/
 
-#include <Adafruit_NeoPixel.h>
-#include <Adafruit_NeoMatrix.h>
+#include <Adafruit_GFX.h>
+#include <FastLED_NeoMatrix.h>
+#include <FastLED.h>
 #include "gamma.h"
 #ifdef __AVR__
  #include <avr/pgmspace.h>
@@ -46,18 +47,59 @@
 #define _swap_uint16_t(a, b) { uint16_t t = a; a = b; b = t; }
 #endif
 
+
+
 // Constructor for single matrix:
-Adafruit_NeoMatrix::Adafruit_NeoMatrix(int w, int h, uint8_t pin,
-  uint8_t matrixType, neoPixelType ledType) : Adafruit_GFX(w, h),
-  Adafruit_NeoPixel(w * h, pin, ledType), type(matrixType), matrixWidth(w),
-  matrixHeight(h), tilesX(0), tilesY(0), remapFn(NULL) { }
+FastLED_NeoMatrix::FastLED_NeoMatrix(int w, int h, uint8_t pin, uint8_t matrixType) : 
+  Adafruit_GFX(w, h),
+  CFastLED(),
+  type(matrixType), matrixWidth(w), matrixHeight(h), tilesX(0), tilesY(0), remapFn(NULL) { 
+    numpix = matrixWidth * matrixHeight;
+    _malloc_size = numpix * sizeof(CRGB);
+    if (! (leds = (CRGB *) malloc(_malloc_size)))
+    {
+	while (1) {
+	    Serial.println(F("Malloc failed for LED Matrix"));
+	}
+    }
+    // And this, is why templates are forbidden in many companies' style guide.
+    // Not only they're so unreadable, but they require that you set their argument
+    // value at compilation time, leading to silly stuff like this:
+    if (pin == 1)  addLeds<NEOPIXEL,1>( leds, numpix);
+    if (pin == 2)  addLeds<NEOPIXEL,2>( leds, numpix);
+    if (pin == 3)  addLeds<NEOPIXEL,3>( leds, numpix);
+    if (pin == 4)  addLeds<NEOPIXEL,4>( leds, numpix);
+    if (pin == 5)  addLeds<NEOPIXEL,5>( leds, numpix);
+    if (pin == 6)  addLeds<NEOPIXEL,6>( leds, numpix);
+    if (pin == 7)  addLeds<NEOPIXEL,7>( leds, numpix);
+    if (pin == 8)  addLeds<NEOPIXEL,8>( leds, numpix);
+    if (pin == 9)  addLeds<NEOPIXEL,9>( leds, numpix);
+    if (pin == 10) addLeds<NEOPIXEL,10>(leds, numpix);
+    if (pin == 11) addLeds<NEOPIXEL,11>(leds, numpix);
+    if (pin == 12) addLeds<NEOPIXEL,12>(leds, numpix);
+    if (pin == 13) addLeds<NEOPIXEL,13>(leds, numpix);
+    if (pin == 14) addLeds<NEOPIXEL,14>(leds, numpix);
+    if (pin == 15) addLeds<NEOPIXEL,15>(leds, numpix);
+    if (pin == 16) addLeds<NEOPIXEL,16>(leds, numpix);
+    if (pin == 17) addLeds<NEOPIXEL,17>(leds, numpix);
+    if (pin == 18) addLeds<NEOPIXEL,18>(leds, numpix);
+    if (pin == 19) addLeds<NEOPIXEL,19>(leds, numpix);
+    if (pin == 20) addLeds<NEOPIXEL,20>(leds, numpix);
+    if (pin == 21) addLeds<NEOPIXEL,21>(leds, numpix);
+    if (pin == 22) addLeds<NEOPIXEL,22>(leds, numpix);
+    if (pin == 23) addLeds<NEOPIXEL,23>(leds, numpix);
+    if (pin == 24) addLeds<NEOPIXEL,24>(leds, numpix);
+  }
 
 // Constructor for tiled matrices:
-Adafruit_NeoMatrix::Adafruit_NeoMatrix(uint8_t mW, uint8_t mH, uint8_t tX,
-  uint8_t tY, uint8_t pin, uint8_t matrixType, neoPixelType ledType) :
-  Adafruit_GFX(mW * tX, mH * tY), Adafruit_NeoPixel(mW * mH * tX * tY, pin,
-  ledType), type(matrixType), matrixWidth(mW), matrixHeight(mH), tilesX(tX),
-  tilesY(tY), remapFn(NULL) { }
+FastLED_NeoMatrix::FastLED_NeoMatrix(uint8_t mW, uint8_t mH, uint8_t tX, uint8_t tY, uint8_t pin, uint8_t matrixType) :
+  Adafruit_GFX(mW * tX, mH * tY), 
+  CFastLED(),
+  type(matrixType), matrixWidth(mW), matrixHeight(mH), tilesX(tX), tilesY(tY), remapFn(NULL) { 
+    numpix = matrixWidth * matrixHeight * tilesX * tilesY;
+    //CRGB leds[w*h];
+    //CFastLED.addLeds<NEOPIXEL,pin>(leds, w*h);
+  }
 
 // Expand 16-bit input color (Adafruit_GFX colorspace) to 24-bit (NeoPixel)
 // (w/gamma adjustment)
@@ -68,7 +110,7 @@ static uint32_t expandColor(uint16_t color) {
 }
 
 // Downgrade 24-bit color to 16-bit (add reverse gamma lookup here?)
-uint16_t Adafruit_NeoMatrix::Color(uint8_t r, uint8_t g, uint8_t b) {
+uint16_t FastLED_NeoMatrix::Color(uint8_t r, uint8_t g, uint8_t b) {
   return ((uint16_t)(r & 0xF8) << 8) |
          ((uint16_t)(g & 0xFC) << 3) |
                     (b         >> 3);
@@ -85,17 +127,17 @@ uint16_t Adafruit_NeoMatrix::Color(uint8_t r, uint8_t g, uint8_t b) {
 // it (call with no value)!
 
 // Pass raw color value to set/enable passthrough
-void Adafruit_NeoMatrix::setPassThruColor(uint32_t c) {
+void FastLED_NeoMatrix::setPassThruColor(uint32_t c) {
   passThruColor = c;
   passThruFlag  = true;
 }
 
 // Call without a value to reset (disable passthrough)
-void Adafruit_NeoMatrix::setPassThruColor(void) {
+void FastLED_NeoMatrix::setPassThruColor(void) {
   passThruFlag = false;
 }
 
-void Adafruit_NeoMatrix::drawPixel(int16_t x, int16_t y, uint16_t color) {
+void FastLED_NeoMatrix::drawPixel(int16_t x, int16_t y, uint16_t color) {
 
   if((x < 0) || (y < 0) || (x >= _width) || (y >= _height)) return;
 
@@ -194,19 +236,17 @@ void Adafruit_NeoMatrix::drawPixel(int16_t x, int16_t y, uint16_t color) {
     }
   }
 
-  setPixelColor(tileOffset + pixelOffset,
-    passThruFlag ? passThruColor : expandColor(color));
+  leds[tileOffset + pixelOffset] =
+    passThruFlag ? passThruColor : expandColor(color);
 }
 
-void Adafruit_NeoMatrix::fillScreen(uint16_t color) {
-  uint16_t i, n;
+void FastLED_NeoMatrix::fillScreen(uint16_t color) {
   uint32_t c;
 
   c = passThruFlag ? passThruColor : expandColor(color);
-  n = numPixels();
-  for(i=0; i<n; i++) setPixelColor(i, c);
+  for (uint16_t i=0; i<numpix; i++) { leds[i]=c; }
 }
 
-void Adafruit_NeoMatrix::setRemapFunction(uint16_t (*fn)(uint16_t, uint16_t)) {
+void FastLED_NeoMatrix::setRemapFunction(uint16_t (*fn)(uint16_t, uint16_t)) {
   remapFn = fn;
 }

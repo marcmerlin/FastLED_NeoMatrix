@@ -1,10 +1,10 @@
-// Adafruit_NeoMatrix example for single NeoPixel Shield.
+// FastLED_NeoMatrix example for single NeoPixel Shield.
 // By Marc MERLIN <marc_soft@merlins.org>
 // Contains code (c) Adafruit, license BSD
 
 #include <Adafruit_GFX.h>
-#include <Adafruit_NeoMatrix.h>
-#include <Adafruit_NeoPixel.h>
+#include <FastLED_NeoMatrix.h>
+#include <FastLED.h>
 
 // Choose your prefered pixmap
 //#include "heart24.h"
@@ -25,7 +25,7 @@
 #endif
 
 //#define P32BY8X4
-#define P16BY16X4
+//#define P16BY16X4
 #if defined(P32BY8X4) || defined(P16BY16X4)
 #define BM32
 #endif
@@ -38,7 +38,7 @@
 
 // Max is 255, 32 is a conservative value to not overload
 // a USB power supply (500mA) for 12x12 pixels.
-#define BRIGHTNESS 32
+#define BRIGHTNESS 8
 
 // MATRIX DECLARATION:
 // Parameter 1 = width of EACH NEOPIXEL MATRIX (not total display)
@@ -78,33 +78,30 @@
 // Define full matrix width and height.
 #define mw 32
 #define mh 32
-Adafruit_NeoMatrix *matrix = new Adafruit_NeoMatrix(8, mh, 
+FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(8, mh, 
   mw/8, 1, 
   PIN,
   NEO_MATRIX_TOP     + NEO_MATRIX_RIGHT +
     NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG + 
 // progressive vs zigzag makes no difference for a 4 arrays next to one another
-    NEO_TILE_TOP + NEO_TILE_LEFT +  NEO_TILE_PROGRESSIVE,
-  NEO_GRB            + NEO_KHZ800 );
+    NEO_TILE_TOP + NEO_TILE_LEFT +  NEO_TILE_PROGRESSIVE);
 #elif defined(P16BY16X4)
 #define mw 32
 #define mh 32
-Adafruit_NeoMatrix *matrix = new Adafruit_NeoMatrix(16, mh, 
+FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(16, mh, 
   mw/16, mh/16, 
   PIN,
   NEO_MATRIX_TOP     + NEO_MATRIX_RIGHT +
     NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG + 
-    NEO_TILE_TOP + NEO_TILE_LEFT +  NEO_TILE_ZIGZAG,
-  NEO_GRB            + NEO_KHZ800 );
+    NEO_TILE_TOP + NEO_TILE_LEFT +  NEO_TILE_ZIGZAG);
 #else
 // Define matrix width and height.
 #define mw 16
 #define mh 16
-Adafruit_NeoMatrix *matrix = new Adafruit_NeoMatrix(mw, mh, 
+FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(mw, mh, 
   PIN,
   NEO_MATRIX_TOP     + NEO_MATRIX_RIGHT +
-    NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG,
-  NEO_GRB            + NEO_KHZ800 );
+    NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG);
 #endif
 
 // This could also be defined as matrix->color(255,0,0) but those defines
@@ -361,13 +358,20 @@ void fixdrawRGBBitmap(int16_t x, int16_t y, const uint16_t *bitmap, int16_t w, i
 // pixels are all in sequence (to check your wiring order and the tile options you
 // gave to the constructor).
 void count_pixels() {
-    matrix->clear();
+    //matrix->clear();
     for (uint16_t i=0; i<mh; i++) {
 	for (uint16_t j=0; j<mw; j++) {
+	    //Serial.print(">");
 	    matrix->drawPixel(j, i, i%3==0?LED_BLUE_HIGH:i%3==1?LED_RED_HIGH:LED_GREEN_HIGH);
+	    //Serial.print(i);
+	    //Serial.print(" ");
+	    //Serial.print(j);
+	    //Serial.print("_");
 	    // depending on the matrix size, it's too slow to display each pixel, so
 	    // make the scan init faster. This will however be too fast on a small matrix.
-	    if (!(j%7)) matrix->show();
+	    //if (!(j%7)) matrix->show();
+	    matrix->show();
+	    //delay(100);
 	}
     }
 }
@@ -634,9 +638,12 @@ void loop() {
     }
 #endif
 
+    Serial.println("Hellom");
     count_pixels();
     delay(1000);
+    Serial.println("");
 
+    Serial.println("Helloh");
     display_four_white();
     delay(3000);
 
@@ -705,15 +712,19 @@ void loop() {
 
 void setup() {
     Serial.begin(115200);
+  Serial.print("Matrix Size: ");
+  Serial.print(mw);
+  Serial.print(" ");
+  Serial.println(mh);
     matrix->begin();
     matrix->setTextWrap(false);
     matrix->setBrightness(BRIGHTNESS);
     // Test full bright of all LEDs. If brightness is too high
     // for your current limit (i.e. USB), decrease it.
-    matrix->fillScreen(LED_WHITE_HIGH);
-    matrix->show();
-    delay(3000);
-    matrix->clear();
+    //matrix->fillScreen(LED_WHITE_HIGH);
+    //matrix->show();
+    //delay(3000);
+    //matrix->clear();
 }
 
 // vim:sts=4:sw=4
