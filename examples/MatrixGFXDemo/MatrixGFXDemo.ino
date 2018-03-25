@@ -635,7 +635,6 @@ void loop() {
 
     count_pixels();
     delay(1000);
-    Serial.println("");
 
     display_four_white();
     delay(3000);
@@ -704,6 +703,8 @@ void loop() {
 }
 
 void setup() {
+    // Time for serial port to work?
+    delay(1000);
     Serial.begin(115200);
     Serial.print("Matrix Size: ");
     Serial.print(mw);
@@ -718,6 +719,7 @@ void setup() {
 #ifndef DISABLE_WHITE
     matrix->fillScreen(LED_WHITE_HIGH);
     matrix->show();
+    Serial.println("First matrix->show did not crash/hang");
     delay(3000);
     matrix->clear();
 #endif
