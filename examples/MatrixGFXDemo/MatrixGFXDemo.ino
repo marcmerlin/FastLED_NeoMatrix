@@ -15,14 +15,7 @@
  #define PSTR // Make Arduino Due happy
 #endif
 
-#define PIN 6
-
-// ESP8266 has an I2S neopixel library which can only use pin RX
-// so it's recommended to use the same pin with Neopixel to avoid
-// rewiring when changing libs
-#ifdef ESP8266
-#define PIN RX
-#endif
+#define PIN 5
 
 //#define P32BY8X4
 //#define P16BY16X4
