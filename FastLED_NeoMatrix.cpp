@@ -77,6 +77,8 @@ FastLED_NeoMatrix::FastLED_NeoMatrix(uint8_t mW, uint8_t mH, uint8_t tX, uint8_t
     Serial.println(numpix);
     Serial.print("malloc size: ");
     Serial.println(_malloc_size);
+    Serial.print("pin: ");
+    Serial.println(pin);
     if (! (leds = (CRGB *) malloc(_malloc_size)))
     {
 	while (1) {
@@ -107,18 +109,20 @@ FastLED_NeoMatrix::FastLED_NeoMatrix(uint8_t mW, uint8_t mH, uint8_t tX, uint8_t
       if (pin == 13) addLeds<NEOPIXEL,13>(leds, numpix);
       if (pin == 14) addLeds<NEOPIXEL,14>(leds, numpix);
       if (pin == 15) addLeds<NEOPIXEL,15>(leds, numpix);
+#if not defined(ESP8266)
       if (pin == 16) addLeds<NEOPIXEL,16>(leds, numpix);
       if (pin == 17) addLeds<NEOPIXEL,17>(leds, numpix);
       if (pin == 18) addLeds<NEOPIXEL,18>(leds, numpix);
       if (pin == 19) addLeds<NEOPIXEL,19>(leds, numpix);
-#if not defined(ESP32) and not defined(ESP8266)
+#if not defined(ESP32)
       if (pin == 20) addLeds<NEOPIXEL,20>(leds, numpix);
 #endif
       if (pin == 21) addLeds<NEOPIXEL,21>(leds, numpix);
       if (pin == 22) addLeds<NEOPIXEL,22>(leds, numpix);
       if (pin == 23) addLeds<NEOPIXEL,23>(leds, numpix);
-#if not defined(ESP32) and not defined(ESP8266)
+#if not defined(ESP32)
       if (pin == 24) addLeds<NEOPIXEL,24>(leds, numpix);
+#endif
 #endif
     }
   }
