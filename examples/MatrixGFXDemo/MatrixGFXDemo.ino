@@ -15,7 +15,11 @@
  #define PSTR // Make Arduino Due happy
 #endif
 
+#if not defined(ESP32) and not defined(ESP8266)
+#define PIN 13
+#else
 #define PIN 5
+#endif
 
 //#define P32BY8X4
 //#define P16BY16X4

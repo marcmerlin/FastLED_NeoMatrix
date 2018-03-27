@@ -81,9 +81,9 @@ FastLED_NeoMatrix::FastLED_NeoMatrix(uint8_t mW, uint8_t mH, uint8_t tX, uint8_t
     Serial.println(pin);
     if (! (leds = (CRGB *) malloc(_malloc_size)))
     {
-	while (1) {
-	    Serial.println(F("Malloc failed for LED Matrix"));
-	}
+      while (1) {
+        Serial.println(F("Malloc failed for LED Matrix"));
+      }
     }
     // And this, is why templates are forbidden in many companies' style guide.
     // Not only they're so unreadable, but they require that you set their argument
@@ -114,6 +114,7 @@ FastLED_NeoMatrix::FastLED_NeoMatrix(uint8_t mW, uint8_t mH, uint8_t tX, uint8_t
       if (pin == 17) addLeds<NEOPIXEL,17>(leds, numpix);
       if (pin == 18) addLeds<NEOPIXEL,18>(leds, numpix);
       if (pin == 19) addLeds<NEOPIXEL,19>(leds, numpix);
+#if not defined(__AVR_ATmega328P__)
 #if not defined(ESP32)
       if (pin == 20) addLeds<NEOPIXEL,20>(leds, numpix);
 #endif
@@ -122,6 +123,7 @@ FastLED_NeoMatrix::FastLED_NeoMatrix(uint8_t mW, uint8_t mH, uint8_t tX, uint8_t
       if (pin == 23) addLeds<NEOPIXEL,23>(leds, numpix);
 #if not defined(ESP32)
       if (pin == 24) addLeds<NEOPIXEL,24>(leds, numpix);
+#endif
 #endif
 #endif
     }

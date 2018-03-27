@@ -94,11 +94,13 @@ class FastLED_NeoMatrix : public Adafruit_GFX, public CFastLED {
   static uint16_t
     Color(uint8_t r, uint8_t g, uint8_t b);
 
-//  void show() {
-//    Serial.print("Show numpix ");
-//    Serial.println(numpix);
-//    CFastLED::show();
-//  };
+  void show() {
+    //Serial.print("Show numpix ");
+    //Serial.println(numpix);
+    // Why does CFastLED::show() fail?
+    FastLED.show();
+    //Serial.println("after show");
+  };
 
   void begin();
 
