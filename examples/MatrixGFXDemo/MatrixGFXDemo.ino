@@ -15,6 +15,11 @@
  #define PSTR // Make Arduino Due happy
 #endif
 
+// Allow temporaly dithering, does not work with ESP32 right now
+#ifndef ESP32
+#define delay FastLED.delay
+#endif
+
 #if defined(ESP32) or defined(ESP8266)
 #define PIN 5
 #else
@@ -23,7 +28,8 @@
 
 //#define P32BY8X4
 //#define P16BY16X4
-#if defined(P32BY8X4) || defined(P16BY16X4)
+//#define P32BY8X3
+#if defined(P32BY8X4) || defined(P16BY16X4) || defined(P32BY8X3)
 #define BM32
 #endif
 
@@ -38,11 +44,11 @@
 #define BRIGHTNESS 16
 
 // Define full matrix width and height.
-#ifdef P32BY8X4
+#if defined(P32BY8X4) || defined(P16BY16X4)
     #define mw 32
     #define mh 32
-#elif defined(P16BY16X4)
-    #define mw 32
+#elif defined(P32BY8X3)
+    #define mw 24
     #define mh 32
 #else
     #define mw 16
@@ -97,6 +103,11 @@ FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(leds, 16, mh, mw/16, mh/16,
   NEO_MATRIX_TOP     + NEO_MATRIX_RIGHT +
     NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG + 
     NEO_TILE_TOP + NEO_TILE_LEFT +  NEO_TILE_ZIGZAG);
+#elif defined(P32BY8X3)
+FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(leds, 8, mh, mw/8, 1, 
+  NEO_MATRIX_TOP     + NEO_MATRIX_RIGHT +
+    NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG + 
+    NEO_TILE_TOP + NEO_TILE_LEFT +  NEO_TILE_PROGRESSIVE);
 #else
 // Define matrix width and height.
 FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(leds, mw, mh, 
@@ -369,10 +380,11 @@ void count_pixels() {
 	    #ifdef ESP8266
 	    if (!(j%3)) matrix->show();
 	    yield(); // reset watchdog timer
+	    #elif ESP32
+	    delay(1);
 	    #else 
 	    matrix->show();
 	    #endif
-	    //delay(100);
 	}
 	Serial.println("");
     }
@@ -641,7 +653,6 @@ void loop() {
 #endif
 
     Serial.println("Count pixels");
-    Serial.flush();
     count_pixels();
     Serial.println("Count pixels done");
     delay(1000);
