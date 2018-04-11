@@ -382,6 +382,7 @@ void count_pixels() {
 	    yield(); // reset watchdog timer
 	    #elif ESP32
 	    delay(1);
+	    matrix->show();
 	    #else 
 	    matrix->show();
 	    #endif
