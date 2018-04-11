@@ -64,25 +64,26 @@
 #define NEO_TILE_ZIGZAG        0x80 // Tile order reverses between lines
 #define NEO_TILE_SEQUENCE      0x80 // Bitmask for tile line order
 
-// TODO: support more than NEOPIXEL types, add types here and modify 
-// FastLED_NeoMatrix::FastLED_NeoMatrix accordingly
-#define NEO_TYPE_NEOPIXEL      0x01 // FastLED NEOPIXEL type
-
-class FastLED_NeoMatrix : public Adafruit_GFX, public CFastLED {
+/* 
+ * Ideally FastLED_NeoMatrix would multiple inherit from CFastLED too
+ * I tried this, but on that path laid madness, apparent compiler bugs
+ * and pain due to the unfortunate use of templates in FastLED, preventing
+ * passing initalization arguments in the object since they need to be
+ * hardcoded at compile time as template values :( -- merlin
+ */
+class FastLED_NeoMatrix : public Adafruit_GFX {
 
  public:
 
   // Constructor for single matrix:
-  FastLED_NeoMatrix(int w, int h, uint8_t pin = 6,
-    uint8_t matrixType = NEO_MATRIX_TOP + NEO_MATRIX_LEFT + NEO_MATRIX_ROWS, 
-    uint8_t ledType = NEO_TYPE_NEOPIXEL);
+  FastLED_NeoMatrix(CRGB *, uint8_t w, uint8_t h, 
+    uint8_t matrixType = NEO_MATRIX_TOP + NEO_MATRIX_LEFT + NEO_MATRIX_ROWS);
 
   // Constructor for tiled matrices:
-  FastLED_NeoMatrix(uint8_t matrixW, uint8_t matrixH, uint8_t tX,
-    uint8_t tY, uint8_t pin = 6,
+  FastLED_NeoMatrix(CRGB *, uint8_t matrixW, uint8_t matrixH, 
+    uint8_t tX, uint8_t tY,
     uint8_t matrixType = NEO_MATRIX_TOP + NEO_MATRIX_LEFT + NEO_MATRIX_ROWS +
-                         NEO_TILE_TOP + NEO_TILE_LEFT + NEO_TILE_ROWS, 
-    uint8_t ledType = NEO_TYPE_NEOPIXEL);
+                         NEO_TILE_TOP + NEO_TILE_LEFT + NEO_TILE_ROWS);
 
   void
     drawPixel(int16_t x, int16_t y, uint16_t color),
@@ -94,27 +95,28 @@ class FastLED_NeoMatrix : public Adafruit_GFX, public CFastLED {
   static uint16_t
     Color(uint8_t r, uint8_t g, uint8_t b);
 
+  void clear() { FastLED.clear(); };
+  void setBrightness(int b) { FastLED.setBrightness(b); };
+
   void show() {
-    //Serial.print("Show numpix ");
-    //Serial.println(numpix);
-    // Why does CFastLED::show() fail?
+    Serial.print("Show numpix ");
+    Serial.println(numpix);
     FastLED.show();
-    //Serial.println("after show");
+    Serial.println("after show");
   };
 
   void begin();
 
  private:
 
-  CRGB *leds;
+  CRGB *_leds;
   const uint8_t
-    pin, type, ledType;
+    type;
   const uint8_t
     matrixWidth, matrixHeight, tilesX, tilesY;
   uint16_t
     numpix,
     (*remapFn)(uint16_t x, uint16_t y);
-  uint32_t _malloc_size;
 
   uint32_t passThruColor;
   boolean  passThruFlag = false;

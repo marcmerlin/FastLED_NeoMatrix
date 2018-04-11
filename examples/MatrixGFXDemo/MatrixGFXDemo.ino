@@ -15,10 +15,10 @@
  #define PSTR // Make Arduino Due happy
 #endif
 
-#if not defined(ESP32) and not defined(ESP8266)
-#define PIN 13
-#else
+#if defined(ESP32) or defined(ESP8266)
 #define PIN 5
+#else
+#define PIN 13
 #endif
 
 //#define P32BY8X4
@@ -35,7 +35,21 @@
 
 // Max is 255, 32 is a conservative value to not overload
 // a USB power supply (500mA) for 12x12 pixels.
-#define BRIGHTNESS 32
+#define BRIGHTNESS 16
+
+// Define full matrix width and height.
+#ifdef P32BY8X4
+    #define mw 32
+    #define mh 32
+#elif defined(P16BY16X4)
+    #define mw 32
+    #define mh 32
+#else
+    #define mw 16
+    #define mh 16
+#endif
+
+CRGB leds[mw*mh];
 
 // MATRIX DECLARATION:
 // Parameter 1 = width of EACH NEOPIXEL MATRIX (not total display)
@@ -73,30 +87,19 @@
 
 #ifdef P32BY8X4
 // Define full matrix width and height.
-#define mw 32
-#define mh 32
-FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(8, mh, 
-  mw/8, 1, 
-  PIN,
+FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(leds, 8, mh, mw/8, 1, 
   NEO_MATRIX_TOP     + NEO_MATRIX_RIGHT +
     NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG + 
 // progressive vs zigzag makes no difference for a 4 arrays next to one another
     NEO_TILE_TOP + NEO_TILE_LEFT +  NEO_TILE_PROGRESSIVE);
 #elif defined(P16BY16X4)
-#define mw 32
-#define mh 32
-FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(16, mh, 
-  mw/16, mh/16, 
-  PIN,
+FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(leds, 16, mh, mw/16, mh/16, 
   NEO_MATRIX_TOP     + NEO_MATRIX_RIGHT +
     NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG + 
     NEO_TILE_TOP + NEO_TILE_LEFT +  NEO_TILE_ZIGZAG);
 #else
 // Define matrix width and height.
-#define mw 16
-#define mh 16
-FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(mw, mh, 
-  PIN,
+FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(leds, mw, mh, 
   NEO_MATRIX_TOP     + NEO_MATRIX_RIGHT +
     NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG);
 #endif
@@ -630,7 +633,10 @@ void loop() {
     }
 #endif
 
+    Serial.println("Count pixels");
+    Serial.flush();
     count_pixels();
+    Serial.println("Count pixels done");
     delay(1000);
 
     display_four_white();
@@ -700,6 +706,7 @@ void loop() {
 }
 
 void setup() {
+    FastLED.addLeds<NEOPIXEL,PIN>(leds, mw*mh).setCorrection(TypicalLEDStrip);
     // Time for serial port to work?
     delay(1000);
     Serial.begin(115200);
@@ -716,9 +723,10 @@ void setup() {
 #ifndef DISABLE_WHITE
     matrix->fillScreen(LED_WHITE_HIGH);
     matrix->show();
-    Serial.println("First matrix->show did not crash/hang");
+    Serial.println("First matrix->show did not crash/hang, trying clear");
     delay(3000);
     matrix->clear();
+    Serial.println("First matrix->clear done");
 #endif
 }
 

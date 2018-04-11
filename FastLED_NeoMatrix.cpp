@@ -54,80 +54,31 @@
 
 
 // Constructor for single matrix:
-FastLED_NeoMatrix::FastLED_NeoMatrix(int w, int h, uint8_t pin, uint8_t matrixType, uint8_t ledType): 
+FastLED_NeoMatrix::FastLED_NeoMatrix(CRGB *leds, uint8_t w, uint8_t h, 
+    uint8_t matrixType): 
   Adafruit_GFX(w, h),
-  CFastLED(),
-  pin(pin), type(matrixType), ledType(ledType), matrixWidth(w), matrixHeight(h), tilesX(0), tilesY(0), remapFn(NULL) { 
-    // WARNING: Serial.print seems to crash in the constructor, but works in begin()
+  type(matrixType), matrixWidth(w), matrixHeight(h), tilesX(0), tilesY(0), 
+  remapFn(NULL) { 
+    _leds = leds;
+    // WARNING: Serial.print seems to crash in the constructor, 
+    // but works in begin()
+    numpix = matrixWidth * matrixHeight;
   }
 
 // Constructor for tiled matrices:
-FastLED_NeoMatrix::FastLED_NeoMatrix(uint8_t mW, uint8_t mH, uint8_t tX, uint8_t tY, uint8_t pin, uint8_t matrixType, uint8_t ledType) :
-  Adafruit_GFX(mW * tX, mH * tY), 
-  CFastLED(),
-  pin(pin), type(matrixType), ledType(ledType), matrixWidth(mW), matrixHeight(mH), tilesX(tX), tilesY(tY), remapFn(NULL) { 
+FastLED_NeoMatrix::FastLED_NeoMatrix(CRGB *leds, uint8_t mW, uint8_t mH, 
+    uint8_t tX, uint8_t tY, uint8_t matrixType) :
+  Adafruit_GFX(mW * tX, mH * tY),
+  type(matrixType), matrixWidth(mW), matrixHeight(mH), tilesX(tX), tilesY(tY), 
+  remapFn(NULL) { 
+    _leds = leds;
     numpix = matrixWidth * matrixHeight * tilesX * tilesY;
-    //TODO: write me
  }
 
- void FastLED_NeoMatrix::begin() {
-    numpix = matrixWidth * matrixHeight;
-    _malloc_size = numpix * sizeof(CRGB);
-    Serial.print("Num Pixels: ");
-    Serial.println(numpix);
-    Serial.print("malloc size: ");
-    Serial.println(_malloc_size);
-    Serial.print("pin: ");
-    Serial.println(pin);
-    if (! (leds = (CRGB *) malloc(_malloc_size)))
-    {
-      while (1) {
-        Serial.println(F("Malloc failed for LED Matrix"));
-      }
-    }
-    // And this, is why templates are forbidden in many companies' style guide.
-    // Not only they're so unreadable, but they require that you set their argument
-    // value at compilation time, leading to silly stuff like this:
-    // TODO: we need even more if statements here to allow for other strip types than
-    // just WS1812B, which was the whole point behind this library: support more than 
-    // neopixels only.
-    if (ledType == NEO_TYPE_NEOPIXEL) {
-      if (pin == 1)  addLeds<NEOPIXEL,1>( leds, numpix);
-      if (pin == 2)  addLeds<NEOPIXEL,2>( leds, numpix);
-      if (pin == 3)  addLeds<NEOPIXEL,3>( leds, numpix);
-      if (pin == 4)  addLeds<NEOPIXEL,4>( leds, numpix);
-      if (pin == 5)  addLeds<NEOPIXEL,5>( leds, numpix);
-#if not defined(ESP32) and not defined(ESP8266)
-      if (pin == 6)  addLeds<NEOPIXEL,6>( leds, numpix);
-      if (pin == 7)  addLeds<NEOPIXEL,7>( leds, numpix);
-      if (pin == 8)  addLeds<NEOPIXEL,8>( leds, numpix);
-      if (pin == 9)  addLeds<NEOPIXEL,9>( leds, numpix);
-      if (pin == 10) addLeds<NEOPIXEL,10>(leds, numpix);
-      if (pin == 11) addLeds<NEOPIXEL,11>(leds, numpix);
-#endif
-      if (pin == 12) addLeds<NEOPIXEL,12>(leds, numpix);
-      if (pin == 13) addLeds<NEOPIXEL,13>(leds, numpix);
-      if (pin == 14) addLeds<NEOPIXEL,14>(leds, numpix);
-      if (pin == 15) addLeds<NEOPIXEL,15>(leds, numpix);
-#if not defined(ESP8266)
-      if (pin == 16) addLeds<NEOPIXEL,16>(leds, numpix);
-      if (pin == 17) addLeds<NEOPIXEL,17>(leds, numpix);
-      if (pin == 18) addLeds<NEOPIXEL,18>(leds, numpix);
-      if (pin == 19) addLeds<NEOPIXEL,19>(leds, numpix);
-#if not defined(__AVR_ATmega328P__)
-#if not defined(ESP32)
-      if (pin == 20) addLeds<NEOPIXEL,20>(leds, numpix);
-#endif
-      if (pin == 21) addLeds<NEOPIXEL,21>(leds, numpix);
-      if (pin == 22) addLeds<NEOPIXEL,22>(leds, numpix);
-      if (pin == 23) addLeds<NEOPIXEL,23>(leds, numpix);
-#if not defined(ESP32)
-      if (pin == 24) addLeds<NEOPIXEL,24>(leds, numpix);
-#endif
-#endif
-#endif
-    }
-  }
+void FastLED_NeoMatrix::begin() {
+  Serial.print("Num Pixels: ");
+  Serial.println(numpix);
+}
 
 // Expand 16-bit input color (Adafruit_GFX colorspace) to 24-bit (NeoPixel)
 // (w/gamma adjustment)
@@ -264,7 +215,7 @@ void FastLED_NeoMatrix::drawPixel(int16_t x, int16_t y, uint16_t color) {
     }
   }
 
-  leds[tileOffset + pixelOffset] =
+  _leds[tileOffset + pixelOffset] =
     passThruFlag ? passThruColor : expandColor(color);
 }
 
@@ -272,7 +223,7 @@ void FastLED_NeoMatrix::fillScreen(uint16_t color) {
   uint32_t c;
 
   c = passThruFlag ? passThruColor : expandColor(color);
-  for (uint16_t i=0; i<numpix; i++) { leds[i]=c; }
+  for (uint16_t i=0; i<numpix; i++) { _leds[i]=c; }
 }
 
 void FastLED_NeoMatrix::setRemapFunction(uint16_t (*fn)(uint16_t, uint16_t)) {
