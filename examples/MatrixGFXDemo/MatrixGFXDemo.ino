@@ -360,14 +360,21 @@ void fixdrawRGBBitmap(int16_t x, int16_t y, const uint16_t *bitmap, int16_t w, i
 void count_pixels() {
     matrix->clear();
     for (uint16_t i=0; i<mh; i++) {
+	Serial.print(i, HEX);
 	for (uint16_t j=0; j<mw; j++) {
+	    Serial.print(".");
 	    matrix->drawPixel(j, i, i%3==0?LED_BLUE_HIGH:i%3==1?LED_RED_HIGH:LED_GREEN_HIGH);
 	    // depending on the matrix size, it's too slow to display each pixel, so
 	    // make the scan init faster. This will however be too fast on a small matrix.
-	    //if (!(j%7)) matrix->show();
+	    #ifdef ESP8266
+	    if (!(j%3)) matrix->show();
+	    yield(); // reset watchdog timer
+	    #else 
 	    matrix->show();
+	    #endif
 	    //delay(100);
 	}
+	Serial.println("");
     }
 }
 
@@ -652,9 +659,11 @@ void loop() {
     }
     delay(1000);
 
+    Serial.println("Display Resolution");
     display_resolution();
     delay(3000);
 
+    Serial.println("Display bitmaps");
     // Cycle through red, green, blue, display 2 checkered patterns
     // useful to debug some screen types and alignment.
     uint16_t bmpcolor[] = { LED_GREEN_HIGH, LED_BLUE_HIGH, LED_RED_HIGH };
@@ -666,6 +675,7 @@ void loop() {
  	delay(500);
     }
 
+    Serial.println("Display smileys");
     // Display 3 smiley faces.
     for (uint8_t i=2; i<=4; i++)
     {
@@ -676,6 +686,7 @@ void loop() {
     // If we have multiple pixmaps displayed at once, wait a bit longer on the last.
     delay(mw>8?1000:500);
 
+    Serial.println("Display lines, boxes and circles");
     display_lines();
     delay(3000);
 
@@ -686,6 +697,7 @@ void loop() {
     matrix->clear();
     delay(3000);
 
+    Serial.println("Display RGB bitmaps");
     for (uint8_t i=0; i<=(sizeof(RGB_bmp)/sizeof(RGB_bmp[0])-1); i++)
     {
 	display_rgbBitmap(i);
@@ -694,15 +706,21 @@ void loop() {
     // If we have multiple pixmaps displayed at once, wait a bit longer on the last.
     delay(mw>8?1000:500);
 
+    Serial.println("Scrolltext");
     display_scrollText();
 
 #ifdef BM32
+    Serial.println("bounce 32 bitmap");
     display_panOrBounceBitmap(32);
 #endif
     // pan a big pixmap
+    Serial.println("pan/bounce 24 bitmap");
     display_panOrBounceBitmap(24);
     // bounce around a small one
+    Serial.println("pan/bounce 8 bitmap");
     display_panOrBounceBitmap(8);
+
+    Serial.println("Demo loop done, starting over");
 }
 
 void setup() {

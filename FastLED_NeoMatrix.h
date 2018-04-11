@@ -99,10 +99,10 @@ class FastLED_NeoMatrix : public Adafruit_GFX {
   void setBrightness(int b) { FastLED.setBrightness(b); };
 
   void show() {
-    Serial.print("Show numpix ");
-    Serial.println(numpix);
+    //Serial.print("Show numpix ");
+    //Serial.println(numpix);
     FastLED.show();
-    Serial.println("after show");
+    //Serial.println("after show");
   };
 
   void begin();
