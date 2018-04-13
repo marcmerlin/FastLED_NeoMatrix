@@ -4,19 +4,6 @@
 
 #include <Adafruit_GFX.h>
 #include <FastLED_NeoMatrix.h>
-
-#if defined(ESP8266)
-#define FASTLED_ALLOW_INTERRUPTS 0
-// Ideally disabling Wifi would fix things, but output is stilll broken with this :(
-// https://www.hackster.io/rayburne/esp8266-turn-off-wifi-reduce-current-big-time-1df8ae
-#include "ESP8266WiFi.h"
-extern "C" {
-#include "user_interface.h"
-}
-// min/max are broken by the ESP8266 include
-#define min(a,b) (a<b)?(a):(b)
-#define max(a,b) (a>b)?(a):(b)
-#endif
 #include <FastLED.h>
 
 // Choose your prefered pixmap
@@ -38,11 +25,14 @@ extern "C" {
 #else
 #define PIN 13
 #endif
+#if defined(ESP8266)
+#pragma message template <int DATA_PIN, int T1, int T2, int T3, EOrder RGB_ORDER = RGB, int XTRA0 = 0, bool FLIP = false, int WAIT_TIME = 20>
+#endif
 
 
 //#define P32BY8X4
 //#define P16BY16X4
-//#define P32BY8X3
+#define P32BY8X3
 #if defined(P32BY8X4) || defined(P16BY16X4) || defined(P32BY8X3)
 #define BM32
 #endif
@@ -55,7 +45,7 @@ extern "C" {
 
 // Max is 255, 32 is a conservative value to not overload
 // a USB power supply (500mA) for 12x12 pixels.
-#define BRIGHTNESS 16
+#define BRIGHTNESS 32
 
 // Define full matrix width and height.
 #if defined(P32BY8X4) || defined(P16BY16X4)
@@ -720,8 +710,8 @@ void loop() {
     delay(3000);
 
     display_circles();
-    matrix->clear();
     delay(3000);
+    matrix->clear();
 
     Serial.println("Display RGB bitmaps");
     for (uint8_t i=0; i<=(sizeof(RGB_bmp)/sizeof(RGB_bmp[0])-1); i++)
@@ -750,9 +740,6 @@ void loop() {
 }
 
 void setup() {
-#if defined(ESP8266)
-    WiFi.forceSleepBegin();
-#endif
     FastLED.addLeds<NEOPIXEL,PIN>(leds, mw*mh).setCorrection(TypicalLEDStrip);
     // Time for serial port to work?
     delay(1000);

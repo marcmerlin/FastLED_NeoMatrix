@@ -28,9 +28,6 @@
  #include <pins_arduino.h>
 #endif
 #include <Adafruit_GFX.h>
-#if defined(ESP8266)
-#define FASTLED_ALLOW_INTERRUPTS 0
-#endif
 #include <FastLED.h>
 
 // Matrix layout information is passed in the 'matrixType' parameter for
