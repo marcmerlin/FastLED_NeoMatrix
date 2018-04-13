@@ -4,6 +4,19 @@
 
 #include <Adafruit_GFX.h>
 #include <FastLED_NeoMatrix.h>
+
+#if defined(ESP8266)
+#define FASTLED_ALLOW_INTERRUPTS 0
+// Ideally disabling Wifi would fix things, but output is stilll broken with this :(
+// https://www.hackster.io/rayburne/esp8266-turn-off-wifi-reduce-current-big-time-1df8ae
+#include "ESP8266WiFi.h"
+extern "C" {
+#include "user_interface.h"
+}
+// min/max are broken by the ESP8266 include
+#define min(a,b) (a<b)?(a):(b)
+#define max(a,b) (a>b)?(a):(b)
+#endif
 #include <FastLED.h>
 
 // Choose your prefered pixmap
@@ -25,6 +38,7 @@
 #else
 #define PIN 13
 #endif
+
 
 //#define P32BY8X4
 //#define P16BY16X4
@@ -736,6 +750,9 @@ void loop() {
 }
 
 void setup() {
+#if defined(ESP8266)
+    WiFi.forceSleepBegin();
+#endif
     FastLED.addLeds<NEOPIXEL,PIN>(leds, mw*mh).setCorrection(TypicalLEDStrip);
     // Time for serial port to work?
     delay(1000);
