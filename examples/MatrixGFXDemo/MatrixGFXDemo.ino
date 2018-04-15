@@ -25,9 +25,6 @@
 #else
 #define PIN 13
 #endif
-#if defined(ESP8266)
-#pragma message template <int DATA_PIN, int T1, int T2, int T3, EOrder RGB_ORDER = RGB, int XTRA0 = 0, bool FLIP = false, int WAIT_TIME = 20>
-#endif
 
 
 //#define P32BY8X4

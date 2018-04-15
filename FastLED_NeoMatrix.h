@@ -28,6 +28,14 @@
  #include <pins_arduino.h>
 #endif
 #include <Adafruit_GFX.h>
+#if defined(ESP8266)
+// If you get matrix flickering, modify platforms/esp/8266/clockless_esp8266.h to change WAIT_TIME
+#pragma message "If you get matrix corruption, turn off FASTLED_ALLOW_INTERRUPTS"
+#pragma message "in this library, or modify WAIT_TIME in platforms/esp/8266/clockless_esp8266.h"
+#pragma message "(raise it from 5 to 20 or up to 50 if needed)"
+// Or if you don't need interrupts, you can disable them here
+//#define FASTLED_ALLOW_INTERRUPTS 0
+#endif
 #include <FastLED.h>
 
 // Matrix layout information is passed in the 'matrixType' parameter for
@@ -99,10 +107,16 @@ class FastLED_NeoMatrix : public Adafruit_GFX {
   void setBrightness(int b) { FastLED.setBrightness(b); };
 
   void show() {
-    //Serial.print("Show numpix ");
-    //Serial.println(numpix);
+#ifdef ESP8266
+// Disable watchdog interrupt so that it does not trigger in the middle of
+// updates. and break timing of pixels, causing random corruption on interval
+// https://github.com/esp8266/Arduino/issues/34
+    ESP.wdtDisable();
+#endif
     FastLED.show();
-    //Serial.println("after show");
+#ifdef ESP8266
+    ESP.wdtEnable(1000);
+#endif
   };
 
   void begin();
