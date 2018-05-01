@@ -118,7 +118,10 @@ void FastLED_NeoMatrix::setPassThruColor(void) {
 
 int FastLED_NeoMatrix::XY(int16_t x, int16_t y) {
 
-  if((x < 0) || (y < 0) || (x >= _width) || (y >= _height)) return 0;
+  // Beware, this returns a special out of bounds value, you need an extra
+  // safety pixel at the end of your array to host this, or if you use
+  // drawPixel, the value willl get rejected.
+  if((x < 0) || (y < 0) || (x >= _width) || (y >= _height)) return numpix;
 
   int16_t t;
   switch(rotation) {
