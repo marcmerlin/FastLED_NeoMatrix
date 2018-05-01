@@ -3,11 +3,8 @@
 // NeoPixel 60 LEDs per meter flex strip.
 
 #include <Adafruit_GFX.h>
-#include <Adafruit_NeoMatrix.h>
-#include <Adafruit_NeoPixel.h>
-#ifndef PSTR
- #define PSTR // Make Arduino Due happy
-#endif
+#include <FastLED.h>
+#include <FastLED_NeoMatrix.h>
 
 #define PIN 6
 
@@ -53,33 +50,42 @@
 // There's only one row here, so it doesn't matter if we declare it in row
 // or column order.  The matrices use 800 KHz (v2) pixels that expect GRB
 // color data.
-Adafruit_NeoMatrix matrix = Adafruit_NeoMatrix(10, 8, 3, 1, PIN,
-  NEO_TILE_TOP   + NEO_TILE_LEFT   + NEO_TILE_ROWS   + NEO_TILE_PROGRESSIVE +
-  NEO_MATRIX_TOP + NEO_MATRIX_LEFT + NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG,
-  NEO_GRB + NEO_KHZ800);
+#define mw 24
+#define mh 32
+#define NUMMATRIX (mw*mh)
+
+CRGB matrixleds[NUMMATRIX];
+
+FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(matrixleds, 8, mh, mw/8, 1, 
+  NEO_MATRIX_TOP     + NEO_MATRIX_RIGHT +
+    NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG + 
+    NEO_TILE_TOP + NEO_TILE_LEFT +  NEO_TILE_PROGRESSIVE);
 
 const uint16_t colors[] = {
-  matrix.Color(255, 0, 0), matrix.Color(0, 255, 0), matrix.Color(0, 0, 255) };
+  matrix->Color(255, 0, 0), matrix->Color(0, 255, 0), matrix->Color(0, 0, 255) };
 
 void setup() {
-  matrix.begin();
-  matrix.setTextWrap(false);
-  matrix.setBrightness(40);
-  matrix.setTextColor(colors[0]);
+  //FastLED.addLeds<NEOPIXEL,PIN>(matrixleds, NUMMATRIX); 
+  FastLED.addLeds<WS2811_PORTA,3>(matrixleds, NUMMATRIX/3).setCorrection(TypicalLEDStrip);
+  matrix->begin();
+  matrix->setTextWrap(false);
+  matrix->setBrightness(40);
+  matrix->setTextColor(colors[0]);
 }
 
-int x    = matrix.width();
+int x    = mw;
 int pass = 0;
 
+
 void loop() {
-  matrix.fillScreen(0);
-  matrix.setCursor(x, 0);
-  matrix.print(F("Howdy"));
+  matrix->fillScreen(0);
+  matrix->setCursor(x, 0);
+  matrix->print(F("Howdy"));
   if(--x < -36) {
-    x = matrix.width();
+    x = matrix->width();
     if(++pass >= 3) pass = 0;
-    matrix.setTextColor(colors[pass]);
+    matrix->setTextColor(colors[pass]);
   }
-  matrix.show();
+  matrix->show();
   delay(100);
 }
