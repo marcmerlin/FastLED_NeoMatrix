@@ -33,8 +33,8 @@ FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(leds, 8, mh, mw/8, 1,
     NEO_TILE_TOP + NEO_TILE_LEFT +  NEO_TILE_PROGRESSIVE);
 
 uint8_t speed = 255;
-#define MATRIX_HEIGHT 32
-#define MATRIX_WIDTH 24
+#define MATRIX_HEIGHT mh
+#define MATRIX_WIDTH mw
 
 int XY( int x, int y) 
 {
