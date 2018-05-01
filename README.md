@@ -8,6 +8,8 @@ Please see https://learn.adafruit.com/adafruit-neopixel-uberguide/neomatrix-libr
 
 Example code: https://github.com/marcmerlin/FastLED_NeoMatrix/blob/master/examples/MatrixGFXDemo/MatrixGFXDemo.ino
 
+More complex example code: https://github.com/marcmerlin/NeoMatrix-FastLED-IR
+
 This code was taken from Adafruit_NeoMatrix and adapted to work with the more powerful FastLED library.
 The reasons for using FastLED instead of Adafruit::Neopixel as a backend, include:
 * FastLED supports more microcontrollers
