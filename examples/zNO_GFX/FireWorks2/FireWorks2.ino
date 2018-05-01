@@ -9,10 +9,11 @@
 // Updated by JP Roy to have multiple shell launches 2015
 //
 // Updated by Sublime for Novel Mutations Costume Controllers 2018
+//
+// Further adapted by Marc MERLIN for integration in FastLED::NeoMatrix
+// standalone examples.
 
 
-#include "config.h"
-#include <Adafruit_GFX.h>
 #include <FastLED_NeoMatrix.h>
 #include <FastLED.h>
 
@@ -22,14 +23,16 @@
 
 #define BRIGHTNESS 64
 
-CRGB leds[NUMMATRIX];
+// Add safety pixel off screen to deal with broken code trying to write
+// outside of the X,Y coordinates
+CRGB leds[NUMMATRIX+1];
 
 FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(leds, 8, mh, mw/8, 1, 
   NEO_MATRIX_TOP     + NEO_MATRIX_RIGHT +
     NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG + 
     NEO_TILE_TOP + NEO_TILE_LEFT +  NEO_TILE_PROGRESSIVE);
 
-uint8_t speed = 42;
+uint8_t speed = 255;
 #define MATRIX_HEIGHT 32
 #define MATRIX_WIDTH 24
 
@@ -136,7 +139,7 @@ class Dot {
 	void Move() {
 //		if( !show) return;
 
-//		if(((xv >  0) && (x+xv < xv)) || ((xv < 0) && (x+xv > xv))) show = 0;	// Prevents pixels wraparounds from side to side
+		if(((xv >  0) && (x+xv < xv)) || ((xv < 0) && (x+xv > xv))) show = 0;	// Prevents pixels wraparounds from side to side
 		if(((yv >  0) && (y+yv < yv)))  show = 0;				// Prevents pixels wraparounds from top to bottom
 		if( yv < 0 && (y < (-yv)) ) show = 0;					// If velocity is negative AND we are about to hit the ground 
 
@@ -175,8 +178,8 @@ class Dot {
 		yv = ((20*(MATRIX_HEIGHT+(3*(gGravity*0.8))))-(MATRIX_HEIGHT*5)) + random16(MATRIX_HEIGHT*5);	// Vertical velocity = Minimum velocity + Random maximum difference
 		xv = random16(350) - 175;			// Generates a signed int value between +/- 175  (Nice width but always inside of frame)      
 		y = 0;						// Ground launch
-		x = random16(); 				// Horizontal
-//		x = random16(0x7000)+0x1000;			// Horizontal middle 7/8 of the matrix
+//		x = random16(); 				// Horizontal
+		x = random16(0x7000)+0x1000;			// Horizontal middle 7/8 of the matrix
 //		x = random16(0x4000)+0x2000;			// Horizontal middle 2/4 of the matrix
 //		x = 0x4000;					// Horizontal middle of the matrix
 		color.setRGB(24,24,24);				// Shells are white color' as a CRGB
@@ -196,8 +199,8 @@ class Dot {
 	}							// End of Skyburst function
 };								// End of Dot class definition
 
-#define MAX_SHELLS 6
-#define MIN_SHELLS 2
+#define MAX_SHELLS 8
+#define MIN_SHELLS 4
 #define MAX_SPARKS 40
 #define MIN_SPARKS 30
 
@@ -206,8 +209,8 @@ Dot gSparks[MAX_SHELLS][MAX_SPARKS];			//Creates an array object named gSparks o
 
 void fireworks() 
 {
-	CRGB sky1(0,0,2);				// Background sky color (will only work if brightness is set high 128 or up !!)
-	CRGB sky2(2,2,2);				// Alternate sky color to create a star twinkle effect 
+	CRGB sky1(0,0,8);				// Background sky color (will only work if brightness is set high 128 or up !!)
+	CRGB sky2(8,8,8);				// Alternate sky color to create a star twinkle effect 
 
 	for( uint8_t h = 0; h < MATRIX_WIDTH; h++) {	// All leds will be set to 'sky1' (very dark blue) 
 		for( int v = 0; v < MATRIX_HEIGHT; v++) {
@@ -245,7 +248,8 @@ void fireworks()
 		}
 
 		if(gDot[MAX_SHELLS-1].show == 1) {
-			re_launchcountdown = random16(400) + 100;	// Last SHELL has launched, restart the relaunch timer
+			//re_launchcountdown = random16(400) + 100;	// Last SHELL has launched, restart the relaunch timer
+			re_launchcountdown = random16(100);	// Last SHELL has launched, restart the relaunch timer
 		}
 
 	//	if( gDot[a].theType == EXPLODING) {
