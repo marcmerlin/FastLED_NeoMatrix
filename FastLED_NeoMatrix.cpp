@@ -116,9 +116,9 @@ void FastLED_NeoMatrix::setPassThruColor(void) {
   passThruFlag = false;
 }
 
-void FastLED_NeoMatrix::drawPixel(int16_t x, int16_t y, uint16_t color) {
+int FastLED_NeoMatrix::XY(int16_t x, int16_t y) {
 
-  if((x < 0) || (y < 0) || (x >= _width) || (y >= _height)) return;
+  if((x < 0) || (y < 0) || (x >= _width) || (y >= _height)) return 0;
 
   int16_t t;
   switch(rotation) {
@@ -215,8 +215,14 @@ void FastLED_NeoMatrix::drawPixel(int16_t x, int16_t y, uint16_t color) {
     }
   }
 
-  _leds[tileOffset + pixelOffset] =
-    passThruFlag ? passThruColor : expandColor(color);
+  return(tileOffset + pixelOffset);
+}
+
+void FastLED_NeoMatrix::drawPixel(int16_t x, int16_t y, uint16_t color) {
+
+  if((x < 0) || (y < 0) || (x >= _width) || (y >= _height)) return;
+
+  _leds[XY(x,y)] = passThruFlag ? passThruColor : expandColor(color);
 }
 
 void FastLED_NeoMatrix::fillScreen(uint16_t color) {

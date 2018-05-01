@@ -94,6 +94,7 @@ class FastLED_NeoMatrix : public Adafruit_GFX {
     uint8_t matrixType = NEO_MATRIX_TOP + NEO_MATRIX_LEFT + NEO_MATRIX_ROWS +
                          NEO_TILE_TOP + NEO_TILE_LEFT + NEO_TILE_ROWS);
 
+  int XY(int16_t x, int16_t y); // compat with FastLED code, returns 1D offset
   void
     drawPixel(int16_t x, int16_t y, uint16_t color),
     fillScreen(uint16_t color),
