@@ -100,24 +100,6 @@ int XY( int x, int y) {
 }
 
 
-void setup() {
-  delay( 1000 ); //safety startup delay
-  Serial.begin(115200);
-  //FastLED.addLeds<LED_TYPE,DATA_PIN,COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
-  FastLED.addLeds<WS2811_PORTA,3>(leds, 256).setCorrection(TypicalLEDStrip);
-  FastLED.setBrightness(BRIGHTNESS);
-  matrix->begin();
-  Serial.println("Setup done");
-}
-
-void loop()
-{
-  fire();
-  
-  matrix->show();
-}
-
-
 // based on FastLED example Fire2012WithPalette: https://github.com/FastLED/FastLED/blob/master/examples/Fire2012WithPalette/Fire2012WithPalette.ino
 void fire()
 {
@@ -528,3 +510,67 @@ void sinelon()
 	prevpos = pos;
 }
 
+
+uint8_t gCurrentPatternNumber = 0; // Index number of which pattern is current
+typedef void (*SimplePatternList[])();
+SimplePatternList gPatterns = { fire, theMatrix, coloredRain,  // 0-2
+				stormyRain, bpm, juggle,       // 3-5
+				pride, rainbow, rainbowWithGlitter, // 6-8
+				sinelon, //9 
+				//colorWaves,  // broken until pallette support is added
+};
+
+// fire, theMatrix, stormyRrain, pride
+// debug colorWaves
+
+void nextPattern()
+{
+  // add one to the current pattern number, and wrap around at the end
+  gCurrentPatternNumber = (gCurrentPatternNumber + 1) % ARRAY_SIZE( gPatterns);
+  Serial.print("Switched to pattern #"); Serial.println(gCurrentPatternNumber);
+}
+
+void setup() {
+  delay( 1000 ); //safety startup delay
+  Serial.begin(115200);
+  //FastLED.addLeds<LED_TYPE,DATA_PIN,COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<WS2811_PORTA,3>(leds, 256).setCorrection(TypicalLEDStrip);
+  FastLED.setBrightness(BRIGHTNESS);
+  matrix->begin();
+  Serial.println("Setup done");
+}
+
+void loop()
+{
+#if 0
+	// change to a new cpt-city gradient palette
+	EVERY_N_SECONDS( secondsPerPalette ) {
+		gCurrentPaletteNumber = addmod8( gCurrentPaletteNumber, 1, gGradientPaletteCount);
+		gTargetPalette = gGradientPalettes[ gCurrentPaletteNumber ];
+	}
+
+	EVERY_N_MILLISECONDS(40) {
+		// slowly blend the current palette to the next
+		nblendPaletteTowardPalette( gCurrentPalette, gTargetPalette, 8);
+		nblendPaletteTowardPalette(RotatingFire_p, TargetFire_p, 30);
+		gHue++;  // slowly cycle the "base color" through the rainbow
+	}
+
+	EVERY_N_SECONDS(25) {
+		RotatingFire_p = firePalettes[ rotatingFirePaletteIndex ];
+		rotatingFirePaletteIndex = addmod8( rotatingFirePaletteIndex, 1, firePaletteCount-1);
+		TargetFire_p = firePalettes[ rotatingFirePaletteIndex ];
+	}
+#endif
+
+	EVERY_N_MILLISECONDS(40) {
+		gHue++;  // slowly cycle the "base color" through the rainbow
+	}
+
+	EVERY_N_SECONDS( 10 ) { nextPattern(); } // change patterns periodically
+
+	// Call the current pattern function once, updating the 'leds' array
+	gPatterns[gCurrentPatternNumber]();
+
+	matrix->show();
+}
