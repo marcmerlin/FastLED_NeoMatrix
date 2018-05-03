@@ -86,11 +86,6 @@ CRGB leds[mw*mh];
 //     zig-zag order, the orientation of the matrices in alternate rows
 //     will be rotated 180 degrees (this is normal -- simplifies wiring).
 //   See example below for these values in action.
-// Parameter 7 = pixel type flags, add together as needed:
-//   NEO_RGB     Pixels are wired for RGB bitstream (v1 pixels)
-//   NEO_GRB     Pixels are wired for GRB bitstream (v2 pixels)
-//   NEO_KHZ400  400 KHz bitstream (e.g. FLORA v1 pixels)
-//   NEO_KHZ800  800 KHz bitstream (e.g. High Density LED strip)
 
 #ifdef P32BY8X4
 // Define full matrix width and height.
