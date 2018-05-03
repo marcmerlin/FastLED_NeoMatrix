@@ -112,13 +112,13 @@ void fire()
 	static uint8_t currentFirePaletteIndex = 0;
 	// COOLING: How much does the air cool as it rises?
 	// Less cooling = taller flames.  More cooling = shorter flames.
-	uint8_t cooling = 72;
+	uint8_t cooling = 80;
 	// SPARKING: What chance (out of 255) is there that a new spark will be lit?
 	// Higher chance = more roaring fire.  Lower chance = more flickery fire.
 	uint8_t sparking = 84;
 	// SMOOTHING; How much blending should be done between frames
 	// Lower = more blending and smoother flames. Higher = less blending and flickery flames
-	const uint8_t fireSmoothing = 220;
+	const uint8_t fireSmoothing = 60;
 
 	FastLED.delay(1000/map8(speed,30,110));
 	// Add entropy to random number generator; we use a lot of it.
@@ -513,11 +513,17 @@ void sinelon()
 
 uint8_t gCurrentPatternNumber = 0; // Index number of which pattern is current
 typedef void (*SimplePatternList[])();
+#if 0
 SimplePatternList gPatterns = { fire, theMatrix, coloredRain,  // 0-2
 				stormyRain, bpm, juggle,       // 3-5
 				pride, rainbow, rainbowWithGlitter, // 6-8
 				sinelon, //9 
-				//colorWaves,  // broken until pallette support is added
+				//colorWaves,  // broken until pallette support is added (but I don't like it so much)
+};
+#endif
+// Only use patterns that work ok and look good
+SimplePatternList gPatterns = { fire, theMatrix, coloredRain,  // 0-2
+				stormyRain, pride  // 3-4
 };
 
 // fire, theMatrix, stormyRrain, pride
