@@ -514,18 +514,18 @@ void sinelon()
 
 uint8_t gCurrentPatternNumber = 0; // Index number of which pattern is current
 typedef void (*SimplePatternList[])();
+#if 0
 SimplePatternList gPatterns = { fire, theMatrix, coloredRain,  // 0-2
 				stormyRain, bpm, juggle,       // 3-5
 				pride, rainbow, rainbowWithGlitter, // 6-8
 				sinelon, //9 
 				//colorWaves,  // broken until pallette support is added (but I don't like it so much)
 };
+#endif
 // Only use patterns that work ok and look good
-#if 0
 SimplePatternList gPatterns = { fire, theMatrix, coloredRain,  // 0-2
 				stormyRain, pride  // 3-4
 };
-#endif
 
 // fire, theMatrix, stormyRrain, pride
 // debug colorWaves
