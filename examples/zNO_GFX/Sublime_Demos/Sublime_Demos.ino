@@ -82,6 +82,8 @@ uint8_t currentPaletteIndex = 0;
 
 // Array of temp cells (used by fire, theMatrix, coloredRain, stormyRain)
 uint_fast16_t tempMatrix[MATRIX_WIDTH+1][MATRIX_HEIGHT+1];
+// Temporary CRGB array for storing RGB data for one column to be duplicated.
+CRGB tempHeightStrip[MATRIX_HEIGHT];
 
 // compat shim
 int wrapX(int x) { return x; }
@@ -467,15 +469,14 @@ void pride()
 
 void rainbow()
 {
-	CRGB tempStrip[MATRIX_HEIGHT];
-	fill_rainbow(tempStrip, MATRIX_HEIGHT, gHue, 10);
+	fill_rainbow(tempHeightStrip, MATRIX_HEIGHT, gHue, 10);
 
 	for (uint8_t x = 0; x < MATRIX_WIDTH; x++) {
 		for (int y = 0; y < MATRIX_HEIGHT; y++) {
 			#ifdef REVERSE_ORDER
-			leds[XY(x,y)] = tempStrip[y];
+			leds[XY(x,y)] = tempHeightStrip[y];
 			#else
-			leds[XY(x,y)] = tempStrip[MATRIX_HEIGHT-1-y];
+			leds[XY(x,y)] = tempHeightStrip[MATRIX_HEIGHT-1-y];
 			#endif
 		}
 	}
@@ -491,20 +492,20 @@ void rainbowWithGlitter()
 void sinelon()
 {
 	// a colored dot sweeping back and forth, with fading trails
-	fadeToBlackBy( leds, NUM_LEDS, 20);
+	fadeToBlackBy( tempHeightStrip, MATRIX_HEIGHT, 20);
 	int pos = beatsin16(map8(speed,30,150), 0, MATRIX_HEIGHT - 1);
 	static int prevpos = 0;
 	CRGB color = ColorFromPalette(palettes[currentPaletteIndex], gHue, 255);
 
 	if( pos < prevpos ) {
-		fill_solid( leds+pos, (prevpos-pos)+1, color);
+		fill_solid( tempHeightStrip+pos, (prevpos-pos)+1, color);
 	} else {
-		fill_solid( leds+prevpos, (pos-prevpos)+1, color);
+		fill_solid( tempHeightStrip+prevpos, (pos-prevpos)+1, color);
 	}
 
-	for (uint8_t x = 1; x < MATRIX_WIDTH; x++) {
+	for (uint8_t x = 0; x < MATRIX_WIDTH; x++) {
 		for (int y = 0; y < MATRIX_HEIGHT; y++) {
-			leds[XY(x,y)] = leds[y];
+			leds[XY(x,y)] = tempHeightStrip[y];
 		}
 	}
 	prevpos = pos;
@@ -513,18 +514,18 @@ void sinelon()
 
 uint8_t gCurrentPatternNumber = 0; // Index number of which pattern is current
 typedef void (*SimplePatternList[])();
-#if 0
 SimplePatternList gPatterns = { fire, theMatrix, coloredRain,  // 0-2
 				stormyRain, bpm, juggle,       // 3-5
 				pride, rainbow, rainbowWithGlitter, // 6-8
 				sinelon, //9 
 				//colorWaves,  // broken until pallette support is added (but I don't like it so much)
 };
-#endif
 // Only use patterns that work ok and look good
+#if 0
 SimplePatternList gPatterns = { fire, theMatrix, coloredRain,  // 0-2
 				stormyRain, pride  // 3-4
 };
+#endif
 
 // fire, theMatrix, stormyRrain, pride
 // debug colorWaves
@@ -579,4 +580,15 @@ void loop()
 	gPatterns[gCurrentPatternNumber]();
 
 	matrix->show();
+	// feed watchdog
+	yield();
 }
+
+/* Currrently getting crashes
+Fatal exception 9(LoadStoreAlignmentCause):
+epc1=0x40202d5a, epc2=0x00000000, epc3=0x00000000, excvaddr=0x00000183, depc=0x0000000
+ ets Jan  8 2013,rst cause:4, boot mode:(1,6)
+
+https://github.com/pellepl/spiffs/issues/56
+Look for the file spiffs_config.h - in there are all the build time config defines. Define SPIFFS_ALIGNED_OBJECT_INDEX_TABLES to 1.
+*/
