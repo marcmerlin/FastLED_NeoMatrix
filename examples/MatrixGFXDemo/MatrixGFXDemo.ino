@@ -56,7 +56,8 @@
     #define mh 16
 #endif
 
-CRGB leds[mw*mh];
+#define NUMMATRIX (mw*mh)
+CRGB leds[NUMMATRIX];
 
 // MATRIX DECLARATION:
 // Parameter 1 = width of EACH NEOPIXEL MATRIX (not total display)
@@ -326,6 +327,10 @@ static const uint16_t PROGMEM
 	0x000, 0x000, 0x00F, 0x00F, 0x00F, 0x00F, 0x000, 0x000, },
 };
 
+void matrix_clear() {
+    // clear does not work properly with multiple matrices connected via parallel inputs
+    memset(leds, 0, sizeof(leds));
+}
 
 // Convert a BGR 4/4/4 bitmap to RGB 5/6/5 used by Adafruit_GFX
 void fixdrawRGBBitmap(int16_t x, int16_t y, const uint16_t *bitmap, int16_t w, int16_t h) {
@@ -365,11 +370,9 @@ void fixdrawRGBBitmap(int16_t x, int16_t y, const uint16_t *bitmap, int16_t w, i
 // pixels are all in sequence (to check your wiring order and the tile options you
 // gave to the constructor).
 void count_pixels() {
-    matrix->clear();
+    matrix_clear();
     for (uint16_t i=0; i<mh; i++) {
-	Serial.print(i, HEX);
 	for (uint16_t j=0; j<mw; j++) {
-	    Serial.print(".");
 	    matrix->drawPixel(j, i, i%3==0?LED_BLUE_HIGH:i%3==1?LED_RED_HIGH:LED_GREEN_HIGH);
 	    // depending on the matrix size, it's too slow to display each pixel, so
 	    // make the scan init faster. This will however be too fast on a small matrix.
@@ -383,13 +386,12 @@ void count_pixels() {
 	    matrix->show();
 	    #endif
 	}
-	Serial.println("");
     }
 }
 
 // Fill the screen with multiple levels of white to gauge the quality
 void display_four_white() {
-    matrix->clear();
+    matrix_clear();
     matrix->fillRect(0,0, mw,mh, LED_WHITE_HIGH);
     matrix->drawRect(1,1, mw-2,mh-2, LED_WHITE_MEDIUM);
     matrix->drawRect(2,2, mw-4,mh-4, LED_WHITE_LOW);
@@ -424,7 +426,7 @@ void display_rgbBitmap(uint8_t bmp_num) {
 }
 
 void display_lines() {
-    matrix->clear();
+    matrix_clear();
 
     // 4 levels of crossing red lines.
     matrix->drawLine(0,mh/2-2, mw-1,2, LED_RED_VERYLOW);
@@ -445,7 +447,7 @@ void display_lines() {
 }
 
 void display_boxes() {
-    matrix->clear();
+    matrix_clear();
     matrix->drawRect(0,0, mw,mh, LED_BLUE_HIGH);
     matrix->drawRect(1,1, mw-2,mh-2, LED_GREEN_MEDIUM);
     matrix->fillRect(2,2, mw-4,mh-4, LED_RED_HIGH);
@@ -454,7 +456,7 @@ void display_boxes() {
 }
 
 void display_circles() {
-    matrix->clear();
+    matrix_clear();
     matrix->drawCircle(mw/2,mh/2, 2, LED_RED_MEDIUM);
     matrix->drawCircle(mw/2-1-min(mw,mh)/8, mh/2-1-min(mw,mh)/8, min(mw,mh)/4, LED_BLUE_HIGH);
     matrix->drawCircle(mw/2+1+min(mw,mh)/8, mh/2+1+min(mw,mh)/8, min(mw,mh)/4-1, LED_ORANGE_MEDIUM);
@@ -468,7 +470,7 @@ void display_resolution() {
     matrix->setTextSize(1);
     // not wide enough;
     if (mw<16) return;
-    matrix->clear();
+    matrix_clear();
     // Font is 5x7, if display is too small
     // 8 can only display 1 char
     // 16 can almost display 3 chars
@@ -491,7 +493,7 @@ void display_resolution() {
 	    // the 2nd value on top.
 	    matrix->show();
 	    delay(2000);
-	    matrix->clear();
+	    matrix_clear();
 	    matrix->setCursor(mw-11, 0);
 	}   
     }
@@ -525,12 +527,12 @@ void display_resolution() {
 
 void display_scrollText() {
     uint8_t size = max(int(mw/8), 1);
-    matrix->clear();
+    matrix_clear();
     matrix->setTextWrap(false);  // we don't wrap text so it scrolls nicely
     matrix->setTextSize(1);
     matrix->setRotation(0);
     for (int8_t x=7; x>=-42; x--) {
-	matrix->clear();
+	matrix_clear();
 	matrix->setCursor(x,0);
 	matrix->setTextColor(LED_GREEN_HIGH);
 	matrix->print("Hello");
@@ -547,7 +549,7 @@ void display_scrollText() {
     matrix->setTextSize(size);
     matrix->setTextColor(LED_BLUE_HIGH);
     for (int16_t x=8*size; x>=-6*8*size; x--) {
-	matrix->clear();
+	matrix_clear();
 	matrix->setCursor(x,mw/2-size*4);
 	matrix->print("Rotate");
 	matrix->show();
@@ -583,7 +585,7 @@ void display_panOrBounceBitmap (uint8_t bitmapSize) {
 	int16_t x = xf >> 4;
 	int16_t y = yf >> 4;
 
-	matrix->clear();
+	matrix_clear();
 	// bounce 8x8 tri color smiley face around the screen
 	if (bitmapSize == 8) fixdrawRGBBitmap(x, y, RGB_bmp[10], 8, 8);
 	// pan 24x24 pixmap
@@ -703,7 +705,7 @@ void loop() {
 
     display_circles();
     delay(3000);
-    matrix->clear();
+    matrix_clear();
 
     Serial.println("Display RGB bitmaps");
     for (uint8_t i=0; i<=(sizeof(RGB_bmp)/sizeof(RGB_bmp[0])-1); i++)
@@ -733,6 +735,8 @@ void loop() {
 
 void setup() {
     FastLED.addLeds<NEOPIXEL,PIN>(leds, mw*mh).setCorrection(TypicalLEDStrip);
+    // Parallel output
+    //FastLED.addLeds<WS2811_PORTA,3>(leds, NUMMATRIX/3).setCorrection(TypicalLEDStrip);
     // Time for serial port to work?
     delay(1000);
     Serial.begin(115200);
@@ -749,10 +753,8 @@ void setup() {
 #ifndef DISABLE_WHITE
     matrix->fillScreen(LED_WHITE_HIGH);
     matrix->show();
-    Serial.println("First matrix->show did not crash/hang, trying clear");
     delay(3000);
-    matrix->clear();
-    Serial.println("First matrix->clear done");
+    matrix_clear();
 #endif
 }
 
