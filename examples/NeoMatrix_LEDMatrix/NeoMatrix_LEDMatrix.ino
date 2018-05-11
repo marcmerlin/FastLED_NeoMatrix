@@ -7,9 +7,6 @@
 // License: BSD-2
 
 #include "config.h"
-#include <Adafruit_GFX.h>
-#include <FastLED_NeoMatrix.h>
-#include <FastLED.h>
 
 
 #if defined(ESP32) or defined(ESP8266)
@@ -178,9 +175,9 @@ void loop() {
 
 void setup() {
     // Normal output
-    //FastLED.addLeds<NEOPIXEL,PIN>(leds, NUMMATRIX).setCorrection(TypicalLEDStrip);
+    FastLED.addLeds<NEOPIXEL,PIN>(leds, NUMMATRIX).setCorrection(TypicalLEDStrip);
     // Parallel output on 3 lines (ESP8266)
-    FastLED.addLeds<WS2811_PORTA,3>(leds, NUMMATRIX/3).setCorrection(TypicalLEDStrip);
+    //FastLED.addLeds<WS2811_PORTA,3>(leds, NUMMATRIX/3).setCorrection(TypicalLEDStrip);
     // Time for serial port to work?
     delay(1000);
     Serial.begin(115200);
