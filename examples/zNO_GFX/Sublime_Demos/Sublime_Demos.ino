@@ -85,9 +85,11 @@ uint_fast16_t tempMatrix[MATRIX_WIDTH+1][MATRIX_HEIGHT+1];
 // Temporary CRGB array for storing RGB data for one column to be duplicated.
 CRGB tempHeightStrip[MATRIX_HEIGHT];
 
-// compat shim
-int wrapX(int x) { return x; }
-
+int wrapX(int x) { 
+	if (x < 0 ) return 0;
+	if (x >= MATRIX_WIDTH) return (MATRIX_WIDTH-1);
+	return x;
+}
 
 // wrap is for cylindrical arrays, which I don't use, so ignore it
 // For some reason, Y is reversed on my matrix, so fix this here.
