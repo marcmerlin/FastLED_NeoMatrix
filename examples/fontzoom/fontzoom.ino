@@ -93,11 +93,12 @@ uint8_t font_zoom(uint8_t zoom_type, uint8_t speed) {
     static uint16_t direction;
     static uint16_t size;
     static uint8_t l;
+    static int16_t faster = 0;
     static bool dont_exit;
     static uint16_t delayframe;
     char letters[] = { 'H', 'E', 'L', 'l', 'O' };
     bool done = 0;
-    uint8_t repeat = 1;
+    uint8_t repeat = 3;
 
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
@@ -105,7 +106,7 @@ uint8_t font_zoom(uint8_t zoom_type, uint8_t speed) {
 	direction = 1;
 	size = 3;
 	l = 0;
-	if (matrix_loop == -1) { dont_exit = 1; delayframe = 2; };
+	if (matrix_loop == -1) { dont_exit = 1; delayframe = 2; faster = 0; };
     }
 
     matrix->setTextSize(1);
@@ -116,7 +117,7 @@ uint8_t font_zoom(uint8_t zoom_type, uint8_t speed) {
 	matrix_show(); // make sure we still run at the same speed.
 	return repeat;
     }
-    delayframe = max(speed / 10 -  , 1);
+    delayframe = max((speed / 10) - faster , 1);
     // before exiting, we run the full delay to show the last frame long enough
     if (dont_exit == 0) { dont_exit = 1; return 0; }
     if (direction == 1) {
@@ -133,7 +134,7 @@ uint8_t font_zoom(uint8_t zoom_type, uint8_t speed) {
 	matrix->setCursor(10-size*0.55+offset, 17+size*0.75);
 	matrix->print(letters[l]);
 	if (size<18) size++; 
-	else if (zoom_type == 0) { done = 1; delayframe = speed * 5; } 
+	else if (zoom_type == 0) { done = 1; delayframe = max((speed - faster*10) * 1, 3); } 
 	     else direction = 2;
 
     } else if (zoom_type == 1) {
@@ -148,7 +149,7 @@ uint8_t font_zoom(uint8_t zoom_type, uint8_t speed) {
 	matrix->setFont( &Century_Schoolbook_L_Bold[size] );
 	matrix->setCursor(10-size*0.55+offset, 17+size*0.75);
 	matrix->print(letters[l]);
-	if (size>3) size--; else { done = 1; direction = 1; delayframe = speed * 2; };
+	if (size>3) size--; else { done = 1; direction = 1; delayframe = max((speed-faster*10)/2, 3); };
     }
 
     matrix_show();
@@ -163,10 +164,14 @@ uint8_t font_zoom(uint8_t zoom_type, uint8_t speed) {
     if (zoom_type == 1 && direction == 2) return repeat;
 
     //Serial.println("Done with font animation");
+    faster++;
     matrix_reset_demo = 1;
     dont_exit =  0;
-    // After showing the last letter, pause longer unless it's a zoom in zoom out.
-    if (zoom_type == 0) delayframe *= 2;
+    // Serial.print("delayframe on last letter ");
+    // Serial.println(delayframe);
+    // After showing the last letter, pause longer 
+    // unless it's a zoom in zoom out.
+    if (zoom_type == 0) delayframe *= 5; else delayframe *= 3;
     return repeat;
 }
 
@@ -180,7 +185,7 @@ void loop() {
     // state while you do something else.
     
     if (cnt % 2) {
-	ret = font_zoom(1, 40);
+	ret = font_zoom(1, 25);
     } else {
 	ret = font_zoom(0, 30);
     }
@@ -191,6 +196,7 @@ void loop() {
     if (matrix_loop-- > 0) return;
     Serial.println("Animation loop done, switching to other demo");
     cnt++;
+    //delay(1000);
     matrix_reset_demo = 1;
 }
 
