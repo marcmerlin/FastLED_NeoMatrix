@@ -105,7 +105,7 @@ void loop() {
 	//fileName = "/gifs/32anim_balls.gif";
 	//fileName = "/gifs/32anim_dance.gif";
 	//fileName = "/gifs/32anim_flower.gif";
-	fileName = "/gifs/32anim_photon.gif";
+	//fileName = "/gifs/32anim_photon.gif";
 
 	Serial.print("Reading ");
 	Serial.println(fileName);
