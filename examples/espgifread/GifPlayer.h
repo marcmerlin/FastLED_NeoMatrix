@@ -26,6 +26,8 @@
 #ifndef GifPlayer_H
 #define GifPlayer_H
 
+#include "config.h"
+
 #define DEBUG 0
 
 #include "pixeltypes.h"
@@ -134,7 +136,8 @@ class GifPlayer {
     // Read the specified number of bytes into the specified buffer
     int readIntoBuffer(void *buffer, int numberOfBytes) {
 
-      int result = file.read(buffer, numberOfBytes);
+      //int result = file.read(buffer, numberOfBytes);
+      int result = file.read((uint8_t *)buffer, (size_t)numberOfBytes);
 #if DEBUG == 1
       if (result == -1) {
         Serial.println(F("Read error or EOF occurred"));
@@ -389,7 +392,8 @@ class GifPlayer {
       }
       // Don't clear matrix screen for these disposal methods
       if ((prevDisposalMethod != DISPOSAL_NONE) && (prevDisposalMethod != DISPOSAL_LEAVE)) {
-        backgroundLayer.fillScreen({ 0, 0, 0 });
+        //backgroundLayer.fillScreen({ 0, 0, 0 });
+	matrix_clear();
       }
 
       // Process previous disposal method
@@ -688,7 +692,19 @@ the_end:
           color.blue = gifPalette[pixel].Blue;
 
           // Draw the pixel
-          backgroundLayer.drawPixel(x, y, color);
+          //backgroundLayer.drawPixel(x, y, color);
+#if 0
+	  Serial.print(x);
+	  Serial.print(" ");
+	  Serial.print(y);
+	  Serial.print(" > ");
+	  Serial.println(color.r*65536+color.g*256+color.b, HEX);
+
+#endif
+	  matrix->setPassThruColor(color.r*65536+color.g*256+color.b);
+          matrix->drawPixel(x, y, color);
+	  matrix->setPassThruColor();
+	  //matrixleds[XY(x,y)] = color;
         }
       }
       //// Make animation frame visible
