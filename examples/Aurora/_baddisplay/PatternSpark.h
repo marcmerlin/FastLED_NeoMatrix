@@ -23,6 +23,10 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include "matrix.h"
+#include "Effects.h"
+#include "Drawable.h"
+
 #ifndef PatternSpark_H
 #define PatternSpark_H
 
@@ -50,7 +54,7 @@ class PatternSpark : public Drawable {
 
     unsigned int drawFrame() {
       // Add entropy to random number generator; we use a lot of it.
-      random16_add_entropy( random());
+      random16_add_entropy( random(1000));
 
       effects.DimAll(235);
 

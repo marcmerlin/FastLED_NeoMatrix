@@ -22,8 +22,11 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+
 #ifndef PatternMaze_H
 #define PatternMaze_H
+
+#include "matrix.h"
 
 class PatternMaze : public Drawable {
 private:
@@ -189,8 +192,9 @@ private:
                 grid[newPoint.y][newPoint.x] = (Directions) ((int) grid[newPoint.y][newPoint.x] | (int) point.Opposite(direction));
 
                 Point newImagePoint = imagePoint.Move(direction);
-
-                backgroundLayer.drawPixel(newImagePoint.x, newImagePoint.y, color);
+		// backgroundLayer.drawPixel(newImagePoint.x, newImagePoint.y, color);
+		matrix->setPassThruColor(color.r*65536+color.g*256+color.b);
+                matrix->drawPixel(newImagePoint.x, newImagePoint.y, color);
 
                 cellCount++;
                 cells[cellCount - 1] = newPoint;
@@ -203,7 +207,9 @@ private:
         if (index > -1) {
             Point finishedPoint = cells[index];
             imagePoint = createPoint(finishedPoint.x * 2, finishedPoint.y * 2);
-            backgroundLayer.drawPixel(imagePoint.x, imagePoint.y, color);
+	    // backgroundLayer.drawPixel(imagePoint.x, imagePoint.y, color)
+	    matrix->setPassThruColor(color.r*65536+color.g*256+color.b);
+            matrix->drawPixel(imagePoint.x, imagePoint.y, color);
 
             removeCell(index);
         }
@@ -216,7 +222,8 @@ public:
 
     unsigned int drawFrame() {
         if (cellCount < 1) {
-            backgroundLayer.fillScreen(CRGB(CRGB::Black));
+            //backgroundLayer.fillScreen(CRGB(CRGB::Black));
+	    matrix_clear();
 
             // reset the maze grid
             for (int y = 0; y < height; y++) {
@@ -250,7 +257,8 @@ public:
     }
 
     void start() {
-        backgroundLayer.fillScreen({ 0, 0, 0 });
+        //backgroundLayer.fillScreen({ 0, 0, 0 });
+	matrix_clear();
         cellCount = 0;
         hue = 0;
     }

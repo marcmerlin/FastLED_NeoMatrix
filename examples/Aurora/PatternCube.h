@@ -26,6 +26,8 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include "matrix.h"
+
 #ifndef PatternCube_H
 #define PatternCube_H
 
@@ -158,10 +160,11 @@ class PatternCube : public Drawable {
       uint8_t blurAmount = beatsin8(2, 10, 255);
 
 #if FASTLED_VERSION >= 3001000
-      blur2d(effects.leds, MATRIX_WIDTH, MATRIX_HEIGHT, blurAmount);
+//      blur2d(effects.leds, MATRIX_WIDTH, MATRIX_HEIGHT, blurAmount);
 #else
-      effects.DimAll(blurAmount);
+//      effects.DimAll(blurAmount);
 #endif
+      fadeToBlackBy( leds, NUMMATRIX, 128);
 
       zCamera = beatsin8(2, 100, 140);
       AngxSpeed = beatsin8(3, 1, 10) / 100.0f;
@@ -180,7 +183,8 @@ class PatternCube : public Drawable {
       // Draw cube
       int i;
 
-      CRGB color = effects.ColorFromCurrentPalette(hue, 128);
+      CRGB color = effects.ColorFromCurrentPalette(hue, 64);
+      matrix->setPassThruColor(color.r*65536+color.g*256+color.b);
 
       // Backface
       EdgePoint *e;
@@ -188,11 +192,13 @@ class PatternCube : public Drawable {
       {
         e = edge + i;
         if (!e->visible) {
-          backgroundLayer.drawLine(screen[e->x].x, screen[e->x].y, screen[e->y].x, screen[e->y].y, color);
+          //backgroundLayer.drawLine(screen[e->x].x, screen[e->x].y, screen[e->y].x, screen[e->y].y, color);
+          matrix->drawLine(screen[e->x].x, screen[e->x].y, screen[e->y].x, screen[e->y].y, color);
         }
       }
 
       color = effects.ColorFromCurrentPalette(hue, 255);
+      matrix->setPassThruColor(color.r*65536+color.g*256+color.b);
 
       // Frontface
       for (i = 0; i < 12; i++)
@@ -200,7 +206,8 @@ class PatternCube : public Drawable {
         e = edge + i;
         if (e->visible)
         {
-          backgroundLayer.drawLine(screen[e->x].x, screen[e->x].y, screen[e->y].x, screen[e->y].y, color);
+          //backgroundLayer.drawLine(screen[e->x].x, screen[e->x].y, screen[e->y].x, screen[e->y].y, color);
+          matrix->drawLine(screen[e->x].x, screen[e->x].y, screen[e->y].x, screen[e->y].y, color);
         }
       }
 

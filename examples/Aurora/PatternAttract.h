@@ -20,6 +20,8 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include "matrix.h"
+
 #ifndef PatternAttract_H
 
 class PatternAttract : public Drawable {
@@ -61,7 +63,9 @@ public:
             boid.applyForce(force);
 
             boid.update();
-            backgroundLayer.drawPixel(boid.location.x, boid.location.y, effects.ColorFromCurrentPalette(boid.colorIndex));
+	    // backgroundLayer.drawPixel(boid.location.x, boid.location.y, effects.ColorFromCurrentPalette(boid.colorIndex));
+            effects.leds[XY(boid.location.x, boid.location.y)] = effects.ColorFromCurrentPalette(boid.colorIndex);
+            //matrix->drawPixel(boid.location.x, boid.location.y, 0XFFF000);
 
             boids[i] = boid;
         }

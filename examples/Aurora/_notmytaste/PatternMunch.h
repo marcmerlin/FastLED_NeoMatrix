@@ -25,6 +25,7 @@
 #ifndef PatternMunch_H
 #define PatternMunch_H
 
+#include "matrix.h"
 
 class PatternMunch : public Drawable {
 private:

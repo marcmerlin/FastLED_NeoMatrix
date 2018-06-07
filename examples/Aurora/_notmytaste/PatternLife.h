@@ -25,8 +25,11 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+
 #ifndef PatternLife_H
 #define PatternLife_H
+
+#include "matrix.h"
 
 class Cell {
 public:
@@ -77,7 +80,8 @@ public:
 
     unsigned int drawFrame() {
         if (generation == 0) {
-            backgroundLayer.fillScreen(CRGB(CRGB::Black));
+            //backgroundLayer.fillScreen(CRGB(CRGB::Black));
+	    matrix_clear();
 
             randomFillWorld();
         }

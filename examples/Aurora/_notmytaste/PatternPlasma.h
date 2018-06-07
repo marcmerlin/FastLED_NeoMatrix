@@ -23,8 +23,11 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+
 #ifndef PatternPlasma_H
 #define PatternPlasma_H
+
+#include "matrix.h"
 
 class PatternPlasma : public Drawable {
 private:

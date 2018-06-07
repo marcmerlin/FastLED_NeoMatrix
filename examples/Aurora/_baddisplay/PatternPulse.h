@@ -22,6 +22,9 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+#include "matrix.h"
+#include "Effects.h"
+#include "Drawable.h"
 
 #ifndef PatternPulse_H
 #define PatternPulse_H
@@ -52,17 +55,26 @@ class PatternPulse : public Drawable {
       }
 
       if (step == 0) {
-        backgroundLayer.drawCircle(centerX, centerY, step, effects.ColorFromCurrentPalette(hue));
+        //backgroundLayer.drawCircle(centerX, centerY, step, effects.ColorFromCurrentPalette(hue));
+        CRGB color = effects.ColorFromCurrentPalette(hue);
+        matrix->setPassThruColor(color.r*65536+color.g*256+color.b);
+        matrix->drawCircle(centerX, centerY, step, effects.ColorFromCurrentPalette(hue));
         step++;
       }
       else {
         if (step < maxSteps) {
           // initial pulse
-          backgroundLayer.drawCircle(centerX, centerY, step, effects.ColorFromCurrentPalette(hue, pow(fadeRate, step - 2) * 255));
+          //backgroundLayer.drawCircle(centerX, centerY, step, effects.ColorFromCurrentPalette(hue, pow(fadeRate, step - 2) * 255));
+          CRGB color = effects.ColorFromCurrentPalette(hue, pow(fadeRate, step - 2) * 255);
+          matrix->setPassThruColor(color.r*65536+color.g*256+color.b);
+          matrix->drawCircle(centerX, centerY, step, effects.ColorFromCurrentPalette(hue, pow(fadeRate, step - 2) * 255));
 
           // secondary pulse
           if (step > 3) {
-            backgroundLayer.drawCircle(centerX, centerY, step - 3, effects.ColorFromCurrentPalette(hue, pow(fadeRate, step - 2) * 255));
+            //backgroundLayer.drawCircle(centerX, centerY, step - 3, effects.ColorFromCurrentPalette(hue, pow(fadeRate, step - 2) * 255));
+            CRGB color = effects.ColorFromCurrentPalette(hue, pow(fadeRate, step - 2) * 255);
+            matrix->setPassThruColor(color.r*65536+color.g*256+color.b);
+            matrix->drawCircle(centerX, centerY, step - 3, effects.ColorFromCurrentPalette(hue, pow(fadeRate, step - 2) * 255));
           }
           step++;
         }

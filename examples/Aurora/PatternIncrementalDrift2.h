@@ -20,6 +20,7 @@
 * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
+#include "matrix.h"
 
 #ifndef PatternIncrementalDrift2_H
 #define PatternIncrementalDrift2_H
@@ -52,8 +53,10 @@ class PatternIncrementalDrift2 : public Drawable {
           y = beatcos8((32 - i) * 2, MATRIX_HEIGHT - i, i + 1);
           color = effects.ColorFromCurrentPalette((31 - i) * 14);
         }
+        matrix->setPassThruColor(color.r*65536+color.g*256+color.b);
 
-        backgroundLayer.drawPixel(x, y, color);
+        //backgroundLayer.drawPixel(x, y, color);
+        matrix->drawPixel(x, y, color);
       }
 
       return 0;

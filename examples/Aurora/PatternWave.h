@@ -20,6 +20,8 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include "matrix.h"
+
 #ifndef PatternWave_H
 #define PatternWave_H
 
@@ -61,36 +63,52 @@ public:
             case 0:
                 for (int x = 0; x < MATRIX_WIDTH; x++) {
                     n = quadwave8(x * 2 + theta) / scale;
-                    backgroundLayer.drawPixel(x, n, effects.ColorFromCurrentPalette(x + hue));
+                    //backgroundLayer.drawPixel(x, n, effects.ColorFromCurrentPalette(x + hue));
+                    CRGB color = effects.ColorFromCurrentPalette(x + hue);
+		    matrix->setPassThruColor(color.r*65536+color.g*256+color.b);
+                    matrix->drawPixel(x, n, 0);
                     if (waveCount == 2)
-                        backgroundLayer.drawPixel(x, maxY - n, effects.ColorFromCurrentPalette(x + hue));
+                        //backgroundLayer.drawPixel(x, maxY - n, effects.ColorFromCurrentPalette(x + hue));
+                        matrix->drawPixel(x, maxY - n, 0);
                 }
                 break;
 
             case 1:
                 for (int y = 0; y < MATRIX_HEIGHT; y++) {
                     n = quadwave8(y * 2 + theta) / scale;
-                    backgroundLayer.drawPixel(n, y, effects.ColorFromCurrentPalette(y + hue));
+                    // backgroundLayer.drawPixel(n, y, effects.ColorFromCurrentPalette(y + hue));
+                    CRGB color = effects.ColorFromCurrentPalette(y + hue);
+		    matrix->setPassThruColor(color.r*65536+color.g*256+color.b);
+                    matrix->drawPixel(n, y, 0);
                     if (waveCount == 2)
-                        backgroundLayer.drawPixel(maxX - n, y, effects.ColorFromCurrentPalette(y + hue));
+                        //backgroundLayer.drawPixel(maxX - n, y, effects.ColorFromCurrentPalette(y + hue));
+                        matrix->drawPixel(maxX - n, y, 0);
                 }
                 break;
 
             case 2:
                 for (int x = 0; x < MATRIX_WIDTH; x++) {
                     n = quadwave8(x * 2 - theta) / scale;
-                    backgroundLayer.drawPixel(x, n, effects.ColorFromCurrentPalette(x + hue));
+                    // backgroundLayer.drawPixel(x, n, effects.ColorFromCurrentPalette(x + hue));
+                    CRGB color = effects.ColorFromCurrentPalette(x + hue);
+		    matrix->setPassThruColor(color.r*65536+color.g*256+color.b);
+                    matrix->drawPixel(x, n, 0);
                     if (waveCount == 2)
-                        backgroundLayer.drawPixel(x, maxY - n, effects.ColorFromCurrentPalette(x + hue));
+                        //backgroundLayer.drawPixel(x, maxY - n, effects.ColorFromCurrentPalette(x + hue));
+                        matrix->drawPixel(x, maxY - n, 0);
                 }
                 break;
 
             case 3:
                 for (int y = 0; y < MATRIX_HEIGHT; y++) {
                     n = quadwave8(y * 2 - theta) / scale;
-                    backgroundLayer.drawPixel(n, y, effects.ColorFromCurrentPalette(y + hue));
+                    // backgroundLayer.drawPixel(n, y, effects.ColorFromCurrentPalette(y + hue));
+                    CRGB color = effects.ColorFromCurrentPalette(y + hue);
+		    matrix->setPassThruColor(color.r*65536+color.g*256+color.b);
+                    matrix->drawPixel(n, y, 0);
                     if (waveCount == 2)
-                        backgroundLayer.drawPixel(maxX - n, y, effects.ColorFromCurrentPalette(y + hue));
+                        //backgroundLayer.drawPixel(maxX - n, y, effects.ColorFromCurrentPalette(y + hue));
+                        matrix->drawPixel(maxX - n, y, 0);
                 }
                 break;
         }

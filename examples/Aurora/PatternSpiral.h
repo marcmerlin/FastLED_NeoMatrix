@@ -26,6 +26,8 @@
 #ifndef PatternSpiral_H
 #define PatternSpiral_H
 
+#include "matrix.h"
+
 class PatternSpiral : public Drawable {
 private:
     // Timer stuff (Oszillators)
@@ -108,6 +110,7 @@ public:
         UpdateTimers();
 
         // draw just a line defined by 5 oszillators
+	// this works -- merlin
         effects.BresenhamLine(
             multiTimer[3].count,  // x1
             multiTimer[4].count,  // y1
@@ -115,6 +118,7 @@ public:
             multiTimer[1].count,  // y2
             multiTimer[2].count); // color
 
+	// this doesn't work -- merlin
         // manipulate the screen buffer
         // with fixed parameters (could be oszillators too)
         // center x, y, radius, scale color down
@@ -126,7 +130,7 @@ public:
         effects.SpiralStream(10, 24, 10, 128);
 
         // increase the contrast
-        effects.DimAll(250);
+        effects.DimAll(224);
 
         return 0;
     }

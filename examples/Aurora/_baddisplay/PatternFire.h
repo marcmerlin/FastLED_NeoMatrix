@@ -26,9 +26,9 @@
 #ifndef PatternFire_H
 #define PatternFire_H
 
-#ifndef Effects_H
+#include "matrix.h"
 #include "Effects.h"
-#endif
+#include "Drawable.h"
 
 class PatternFire : public Drawable {
   private:
@@ -54,9 +54,11 @@ class PatternFire : public Drawable {
 
     unsigned int drawFrame() {
       // Add entropy to random number generator; we use a lot of it.
-      random16_add_entropy( random());
+      random16_add_entropy( random(100));
 
-      effects.DimAll(235);
+      //effects.DimAll(235);
+      fadeToBlackBy( leds, NUMMATRIX, 128);
+
 
       for (int x = 0; x < MATRIX_WIDTH; x++) {
         // Step 1.  Cool down every cell a little

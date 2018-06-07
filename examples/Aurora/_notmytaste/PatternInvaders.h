@@ -22,21 +22,25 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+
 #ifndef PatternInvaders_H
 #define PatternInvaders_H
 
-class PatternInvadersSmall : public Drawable {
+#include "matrix.h"
+
+class PatternInvaders : public Drawable {
   private:
     uint8_t x = 1;
     uint8_t y = 1;
 
   public:
-    PatternInvadersSmall() {
+    PatternInvaders() {
       name = (char *)"Invaders Small";
     }
 
     void start() {
-      backgroundLayer.fillScreen(CRGB(CRGB::Black));
+      //backgroundLayer.fillScreen(CRGB(CRGB::Black));
+      matrix_clear();
     }
 
     unsigned int drawFrame() {
@@ -47,11 +51,15 @@ class PatternInvadersSmall : public Drawable {
           CRGB color = CRGB::Black;
 
           if (random(0, 2) == 1) color = color1;
+          matrix->setPassThruColor(color.r*65536+color.g*256+color.b);
 
-          backgroundLayer.drawPixel(x + i, y + j, color);
+          //effects.Pixel(x + i, y + j, color);
+          matrix->drawPixel(x + i, y + j, color);
+
 
           if (i < 2)
-            backgroundLayer.drawPixel(x + (4 - i), y + j, color);
+            //effects.Pixel(x + (4 - i), y + j, color);
+            matrix->drawPixel(x + (4 - i), y + j, color);
         }
       }
 
@@ -78,7 +86,8 @@ class PatternInvadersMedium : public Drawable {
     }
 
     void start() {
-      backgroundLayer.fillScreen(CRGB(CRGB::Black));
+      //backgroundLayer.fillScreen(CRGB(CRGB::Black));
+      matrix_clear();
     }
 
     unsigned int drawFrame() {
@@ -90,10 +99,13 @@ class PatternInvadersMedium : public Drawable {
 
           if (random(0, 2) == 1) color = color1;
 
-          backgroundLayer.fillRectangle(x + (i * 2), y + (j * 2), x + (i * 2 + 1), y + (j * 2 + 1), color);
+          matrix->setPassThruColor(color.r*65536+color.g*256+color.b);
+          //backgroundLayer.fillRect(x + (i * 2), y + (j * 2), x + (i * 2 + 1), y + (j * 2 + 1), color);
+          matrix->fillRect(x + (i * 2), y + (j * 2), 2, 2, color);
 
           if (i < 2)
-            backgroundLayer.fillRectangle(x + (8 - i * 2), y + (j * 2), x + (9 - i * 2), y + (j * 2 + 1), color);
+            //backgroundLayer.fillRect(x + (8 - i * 2), y + (j * 2), x + (9 - i * 2), y + (j * 2 + 1), color);
+            matrix->fillRect(x + (8 - i * 2), y + (j * 2), 2, 2, color);
         }
       }
 
@@ -118,11 +130,13 @@ class PatternInvadersLarge : public Drawable {
     }
 
     void start() {
-      backgroundLayer.fillScreen(CRGB(CRGB::Black));
+      //backgroundLayer.fillScreen(CRGB(CRGB::Black));
+      matrix_clear();
     }
 
     unsigned int drawFrame() {
-      backgroundLayer.fillScreen(CRGB(CRGB::Black));
+      //backgroundLayer.fillScreen(CRGB(CRGB::Black));
+      matrix_clear();
 
       CRGB color1 = effects.ColorFromCurrentPalette(random(0, 255));
 
@@ -134,10 +148,13 @@ class PatternInvadersLarge : public Drawable {
             color = color1;
           }
 
-          backgroundLayer.fillRectangle(1 + x * 6, 1 + y * 6, 5 + x * 6, 5 + y * 6, color);
+          matrix->setPassThruColor(color.r*65536+color.g*256+color.b);
+          //backgroundLayer.fillRect(1 + x * 6, 1 + y * 6, 5 + x * 6, 5 + y * 6, color);
+          matrix->fillRect(1 + x * 6, 1 + y * 6, 4, 4, color);
 
           if (x < 2)
-            backgroundLayer.fillRectangle(1 + (4 - x) * 6, 1 + y * 6, 5 + (4 - x) * 6, 5 + y * 6, color);
+            //backgroundLayer.fillRect(1 + (4 - x) * 6, 1 + y * 6, 5 + (4 - x) * 6, 5 + y * 6, color);
+            matrix->fillRect(1 + (4 - x) * 6, 1 + y * 6, 4, 4, color);
         }
       }
 

@@ -31,6 +31,8 @@
 * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include "matrix.h"
+
 #ifndef PatternPendulumWave_H
 #define PatternPendulumWave_H
 
@@ -46,7 +48,13 @@ class PatternPendulumWave : public Drawable {
       for (int x = 0; x < MATRIX_WIDTH; x++)
       {
         uint8_t y = beatsin8(x + MATRIX_WIDTH, 0, MATRIX_HEIGHT);
-        backgroundLayer.drawPixel(x, y, effects.ColorFromCurrentPalette(x * 7));
+
+        //backgroundLayer.drawPixel(x, y, effects.ColorFromCurrentPalette(x * 7));
+	CRGB color = effects.ColorFromCurrentPalette(x * 7);
+	matrix->setPassThruColor(color.r*65536+color.g*256+color.b);
+        matrix->drawPixel(x, y, color);
+        matrix->setPassThruColor();
+
       }
 
       return 15;

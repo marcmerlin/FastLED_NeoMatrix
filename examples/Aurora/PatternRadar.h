@@ -22,6 +22,8 @@
 
 #ifndef PatternRadar_H
 
+#include "matrix.h"
+
 class PatternRadar : public Drawable {
   private:
     byte theta = 0;

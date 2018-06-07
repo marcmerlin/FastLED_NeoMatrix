@@ -23,6 +23,10 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include "matrix.h"
+#include "Effects.h"
+#include "Drawable.h"
+
 #ifndef PatternSnake_H
 #define PatternSnake_H
 
@@ -114,7 +118,8 @@ public:
     }
 
     unsigned int drawFrame() {
-        backgroundLayer.fillScreen(CRGB(CRGB::Black));
+        //backgroundLayer.fillScreen(CRGB(CRGB::Black));
+	matrix_clear();
 
         fill_palette(colors, SNAKE_LENGTH, initialHue++, 5, effects.currentPalette, 255, LINEARBLEND);
 

@@ -22,6 +22,8 @@
 
 #ifndef PatternBounce_H
 
+#include "matrix.h"
+
 class PatternBounce : public Drawable {
 private:
     static const int count = 32;
@@ -56,7 +58,9 @@ public:
 
             boid.update();
 
-            backgroundLayer.drawPixel(boid.location.x, boid.location.y, effects.ColorFromCurrentPalette(boid.colorIndex));
+            //backgroundLayer.drawPixel(boid.location.x, boid.location.y, effects.ColorFromCurrentPalette(boid.colorIndex));
+	    effects.leds[XY(boid.location.x, boid.location.y)] = effects.ColorFromCurrentPalette(boid.colorIndex);
+            //matrix->drawPixel(boid.location.x, boid.location.y, 0XFFF000);
 
             if (boid.location.y >= MATRIX_HEIGHT - 1) {
                 boid.location.y = MATRIX_HEIGHT - 1;

@@ -20,9 +20,10 @@
 * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+
 #ifndef PatternSpin_H
 
-
+#include "matrix.h"
 
 class PatternSpin : public Drawable {
 public:
@@ -51,6 +52,7 @@ public:
         effects.DimAll(190);
 
         CRGB color = effects.ColorFromCurrentPalette(speed * 8);
+        matrix->setPassThruColor(color.r*65536+color.g*256+color.b);
 
         // start position
         int x;
@@ -69,8 +71,10 @@ public:
             x = (int) (MATRIX_CENTER_X + radius * cos(radians));
             y = (int) (MATRIX_CENTER_Y - radius * sin(radians));
 
-            backgroundLayer.drawPixel(x, y, color);
-            backgroundLayer.drawPixel(y, x, color);
+            //backgroundLayer.drawPixel(x, y, color);
+            //backgroundLayer.drawPixel(y, x, color);
+	    matrix->drawPixel(x, y, color);
+	    matrix->drawPixel(y, x, color);
 
             tempDegrees += 1;
             if (tempDegrees >= 360)

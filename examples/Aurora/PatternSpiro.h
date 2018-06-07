@@ -20,6 +20,8 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include "matrix.h"
+
 #ifndef PatternSpiro_H
 
 class PatternSpiro : public Drawable {
@@ -58,8 +60,15 @@ class PatternSpiro : public Drawable {
         uint8_t x2 = mapsin8(theta2 + i * spirooffset, x - radiusx, x + radiusx);
         uint8_t y2 = mapcos8(theta2 + i * spirooffset, y - radiusy, y + radiusy);
 
+// Calling Colorfromcurrentpalette breaks the pattern in that it stops half way into a ball
         CRGB color = effects.ColorFromCurrentPalette(hueoffset + i * spirooffset, 128);
-        effects.leds[XY(x2, y2)] += color;
+        //uint32_t color = Wheel(hueoffset + i * spirooffset);
+        //effects.leds[XY(x2, y2)] += color;
+	// Use GFX hack to pass 24bit color instead of 16bit color
+	// Some coordinates are off screen, using drawpixel avoids the artifact of overwriting pixel0
+        matrix->setPassThruColor(color.r*65536+color.g*256+color.b);
+        matrix->drawPixel(x2, y2, color);
+        //matrix->drawPixel(x2, y2, Color24toColor16(color));
         
         if((x2 == MATRIX_CENTER_X && y2 == MATRIX_CENTER_Y) ||
            (x2 == MATRIX_CENTRE_X && y2 == MATRIX_CENTRE_Y)) change = true;

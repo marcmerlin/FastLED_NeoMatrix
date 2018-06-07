@@ -22,8 +22,12 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+
 #ifndef PatternRainbowSmoke_H
 #define PatternRainbowSmoke_H
+
+#include "matrix.h"
+#define rgb24 CRGB
 
 class PatternRainbowSmoke : public Drawable {
   private:
@@ -115,7 +119,8 @@ class PatternRainbowSmoke : public Drawable {
               if (!hasColor[nx][ny])
                 continue;
 
-              rgb24 neighborColor = backgroundLayer.readPixel(nx, ny);
+              //rgb24 neighborColor = backgroundLayer.readPixel(nx, ny);
+              rgb24 neighborColor = leds[XY(nx, ny)];
 
               int difference = colorDifference(neighborColor, color);
               if (difference < smallestDifferenceAmongNeighbors || (difference == smallestDifferenceAmongNeighbors && random(2) == 1)) {
@@ -167,7 +172,8 @@ class PatternRainbowSmoke : public Drawable {
 
               neighborCount++;
 
-              rgb24 neighborColor = backgroundLayer.readPixel(nx, ny);
+              //rgb24 neighborColor = backgroundLayer.readPixel(nx, ny);
+              rgb24 neighborColor = leds[XY(nx, ny)];
 
               int difference = colorDifference(neighborColor, color);
               neighborColorDifferenceTotal += difference;
@@ -310,7 +316,8 @@ class PatternRainbowSmoke : public Drawable {
       if (currentColorIndex == 0) {
         //randomSeed(analogRead(5));
 
-        backgroundLayer.fillScreen({ 0, 0, 0 });
+        //backgroundLayer.fillScreen({ 0, 0, 0 });
+        matrix_clear();
         createPalette();
         algorithm = random(2);
 
@@ -338,7 +345,10 @@ class PatternRainbowSmoke : public Drawable {
       isAvailable[point.x][point.y] = false;
       hasColor[point.x][point.y] = true;
 
-      backgroundLayer.drawPixel(point.x, point.y, color);
+      //backgroundLayer.drawPixel(point.x, point.y, color);
+      //effects.Pixel(point.x, point.y, color);
+      matrix->setPassThruColor(color.r*65536+color.g*256+color.b);
+      matrix->drawPixel(point.x, point.y, color);
 
       markAvailableNeighbors(point);
 
@@ -352,7 +362,8 @@ class PatternRainbowSmoke : public Drawable {
     }
 
     void start() {
-      backgroundLayer.fillScreen({ 0, 0, 0 });
+      //backgroundLayer.fillScreen({ 0, 0, 0 });
+      matrix_clear();
       currentColorIndex = 0;
     }
 };

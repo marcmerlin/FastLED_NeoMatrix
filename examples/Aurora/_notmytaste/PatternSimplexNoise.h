@@ -23,8 +23,11 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+
 #ifndef PatternSimplexNoise_H
 #define PatternSimplexNoise_H
+
+#include "matrix.h"
 
 class PatternSimplexNoise : public Drawable {
   public:

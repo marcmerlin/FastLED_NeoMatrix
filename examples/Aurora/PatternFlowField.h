@@ -20,6 +20,8 @@
 * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include "matrix.h"
+
 #ifndef PatternFlowField_H
 
 class PatternFlowField : public Drawable {
@@ -66,7 +68,11 @@ class PatternFlowField : public Drawable {
         boid->velocity.y = -((float)cos8(angle) * 0.0078125 - 1.0);
         boid->update();
 
-        backgroundLayer.drawPixel(boid->location.x, boid->location.y, effects.ColorFromCurrentPalette(angle + hue)); // color
+        //backgroundLayer.drawPixel(boid->location.x, boid->location.y, effects.ColorFromCurrentPalette(angle + hue)); // color
+        //effects.Pixel(boid->location.x, boid->location.y, color); // color
+        CRGB color = effects.ColorFromCurrentPalette(effects.ColorFromCurrentPalette(angle + hue));
+        matrix->setPassThruColor(color.r*65536+color.g*256+color.b);
+        matrix->drawPixel(boid->location.x, boid->location.y, color);
 
         if (boid->location.x < 0 || boid->location.x >= MATRIX_WIDTH ||
             boid->location.y < 0 || boid->location.y >= MATRIX_HEIGHT) {
