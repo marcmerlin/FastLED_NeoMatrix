@@ -1,4 +1,3 @@
-
 /*
  * Aurora: https://github.com/pixelmatix/aurora
  * Copyright (c) 2014 Jason Coon
@@ -25,6 +24,8 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+
+#include "matrix.h"
 
 #ifndef Effects_H
 #define Effects_H
@@ -56,7 +57,7 @@ void drawForegroundHLine(int16_t x0, int16_t x1, int16_t y) {
   int i;
 
   for (i = x0; i <= x1; i++) {
-    indexedLayer.drawPixel(i, y, 1);
+    matrix->drawPixel(i, y, 1);
   }
 }
 
@@ -334,7 +335,7 @@ public:
   }
 
   void PrepareFrame() {
-    leds = (CRGB*) backgroundLayer.backBuffer();
+    //leds = (CRGB*) backgroundLayer.backBuffer();
   }
 
   void ShowFrame() {
@@ -344,18 +345,21 @@ public:
     currentPalette = targetPalette;
     //#endif
 
-    backgroundLayer.swapBuffers();
-    leds = (CRGB*) backgroundLayer.backBuffer();
-    LEDS.countFPS();
+    //backgroundLayer.swapBuffers();
+    //leds = (CRGB*) backgroundLayer.backBuffer();
+    //LEDS.countFPS();
   }
 
   // scale the brightness of the screenbuffer down
   void DimAll(byte value)
   {
+    fadeToBlackBy( leds, NUMMATRIX, 255-value);
+#if 0
     for (int i = 0; i < NUM_LEDS; i++)
     {
       leds[i].nscale8(value);
     }
+#endif
   }
 
 
@@ -873,4 +877,3 @@ public:
 };
 
 #endif
-

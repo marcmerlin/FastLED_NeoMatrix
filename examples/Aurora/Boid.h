@@ -31,6 +31,8 @@
 // Boid class
 // Methods for Separation, Cohesion, Alignment added
 
+#include "Vector.h"
+
 class Boid {
   public:
 
