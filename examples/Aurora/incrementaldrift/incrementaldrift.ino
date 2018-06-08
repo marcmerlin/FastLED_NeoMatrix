@@ -1,7 +1,7 @@
 #include "matrix.h"
 
-#include "Effects.h"
 #include "Drawable.h"
+#include "Effects.h"
 
 #include "PatternIncrementalDrift.h"
 PatternIncrementalDrift pattern;
