@@ -120,7 +120,7 @@ class PatternRainbowSmoke : public Drawable {
                 continue;
 
               //rgb24 neighborColor = backgroundLayer.readPixel(nx, ny);
-              rgb24 neighborColor = leds[XY(nx, ny)];
+              rgb24 neighborColor = matrixleds[XY(nx, ny)];
 
               int difference = colorDifference(neighborColor, color);
               if (difference < smallestDifferenceAmongNeighbors || (difference == smallestDifferenceAmongNeighbors && random(2) == 1)) {
@@ -173,7 +173,7 @@ class PatternRainbowSmoke : public Drawable {
               neighborCount++;
 
               //rgb24 neighborColor = backgroundLayer.readPixel(nx, ny);
-              rgb24 neighborColor = leds[XY(nx, ny)];
+              rgb24 neighborColor = matrixleds[XY(nx, ny)];
 
               int difference = colorDifference(neighborColor, color);
               neighborColorDifferenceTotal += difference;

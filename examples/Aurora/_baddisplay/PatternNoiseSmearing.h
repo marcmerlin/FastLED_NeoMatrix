@@ -87,8 +87,7 @@ public:
   }
 
   unsigned int drawFrame() {
-    //effects.DimAll(230);
-    fadeToBlackBy( leds, NUMMATRIX, 128);
+    effects.DimAll(230);
 
     byte xx = 4 + sin8(millis() / 9) / 10;
     byte yy = 4 + cos8(millis() / 10) / 10;
@@ -127,8 +126,7 @@ public:
 
   unsigned int drawFrame() {
     //CLS();
-    //effects.DimAll(235);
-    fadeToBlackBy( leds, NUMMATRIX, 128);
+    effects.DimAll(235);
 
     for (uint8_t i = 3; i < 32; i = i + 4) {
       effects.leds[XY(i, 15)] += effects.ColorFromCurrentPalette(i * 8);
@@ -161,8 +159,7 @@ public:
   unsigned int drawFrame() {
 
     //CLS();
-    //effects.DimAll(235);
-    fadeToBlackBy( leds, NUMMATRIX, 128);
+    effects.DimAll(235);
 
 
     effects.leds[XY(15, 15)] += effects.ColorFromCurrentPalette(patternNoiseSmearingHue);
@@ -196,8 +193,7 @@ public:
   unsigned int drawFrame() {
 
     //CLS();
-    //effects.DimAll(235);
-    fadeToBlackBy( leds, NUMMATRIX, 128);
+    effects.DimAll(235);
 
 
     for (uint8_t i = 3; i < 32; i = i + 4) {
@@ -229,8 +225,7 @@ public:
   }
 
   unsigned int drawFrame() {
-    //effects.DimAll(230);
-    fadeToBlackBy( leds, NUMMATRIX, 12);
+    effects.DimAll(230);
 
     // draw grid of rainbow dots on top of the dimmed image
     for (uint8_t y = 1; y < 32; y = y + 6) {
@@ -265,8 +260,7 @@ public:
   }
 
   unsigned int drawFrame() {
-    //effects.DimAll(170);
-    fadeToBlackBy( leds, NUMMATRIX, 16);
+    effects.DimAll(170);
 
     // draw a rainbow color palette
     for (uint8_t y = 0; y < MATRIX_HEIGHT; y++) {
@@ -299,8 +293,7 @@ public:
   }
 
   unsigned int drawFrame() {
-    //effects.DimAll(10);
-    fadeToBlackBy( leds, NUMMATRIX, 250);
+    effects.DimAll(10);
 
     CRGB rainbow[7] = {
       CRGB::Red,

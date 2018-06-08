@@ -24,10 +24,10 @@
 * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "matrix.h"
-
 
 #ifndef PatternSwirl_H
+
+#include "matrix.h"
 
 class PatternSwirl : public Drawable {
   private:
@@ -63,12 +63,12 @@ class PatternSwirl : public Drawable {
 
       // The color of each point shifts over time, each at a different speed.
       uint16_t ms = millis();
-      effects.leds[XY(i, j)] += effects.ColorFromCurrentPalette(ms / 11);
-      effects.leds[XY(j, i)] += effects.ColorFromCurrentPalette(ms / 13);
-      effects.leds[XY(ni, nj)] += effects.ColorFromCurrentPalette(ms / 17);
-      effects.leds[XY(nj, ni)] += effects.ColorFromCurrentPalette(ms / 29);
-      effects.leds[XY(i, nj)] += effects.ColorFromCurrentPalette(ms / 37);
-      effects.leds[XY(ni, j)] += effects.ColorFromCurrentPalette(ms / 41);
+      effects.leds[XY(i, j)  ] += XY(i, j)  == NUMMATRIX-1 ? CRGB::Black : effects.ColorFromCurrentPalette(ms / 11);
+      effects.leds[XY(j, i)  ] += XY(j, i)  == NUMMATRIX-1 ? CRGB::Black : effects.ColorFromCurrentPalette(ms / 13);
+      effects.leds[XY(ni, nj)] += XY(ni, nj)== NUMMATRIX-1 ? CRGB::Black : effects.ColorFromCurrentPalette(ms / 17);
+      effects.leds[XY(nj, ni)] += XY(nj, ni)== NUMMATRIX-1 ? CRGB::Black : effects.ColorFromCurrentPalette(ms / 29);
+      effects.leds[XY(i, nj) ] += XY(i, nj) == NUMMATRIX-1 ? CRGB::Black : effects.ColorFromCurrentPalette(ms / 37);
+      effects.leds[XY(ni, j) ] += XY(ni, j) == NUMMATRIX-1 ? CRGB::Black : effects.ColorFromCurrentPalette(ms / 41);
 
       return 0;
     }

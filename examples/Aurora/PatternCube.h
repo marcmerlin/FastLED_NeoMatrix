@@ -26,10 +26,10 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "matrix.h"
-
 #ifndef PatternCube_H
 #define PatternCube_H
+
+#include "matrix.h"
 
 class PatternCube : public Drawable {
   private:
@@ -164,7 +164,7 @@ class PatternCube : public Drawable {
 #else
 //      effects.DimAll(blurAmount);
 #endif
-      fadeToBlackBy( leds, NUMMATRIX, 128);
+      fadeToBlackBy( matrixleds, NUMMATRIX, 128);
 
       zCamera = beatsin8(2, 100, 140);
       AngxSpeed = beatsin8(3, 1, 10) / 100.0f;

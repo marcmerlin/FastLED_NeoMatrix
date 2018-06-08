@@ -56,8 +56,7 @@ class PatternFire : public Drawable {
       // Add entropy to random number generator; we use a lot of it.
       random16_add_entropy( random(100));
 
-      //effects.DimAll(235);
-      fadeToBlackBy( leds, NUMMATRIX, 128);
+      effects.DimAll(235);
 
 
       for (int x = 0; x < MATRIX_WIDTH; x++) {

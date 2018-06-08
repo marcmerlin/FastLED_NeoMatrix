@@ -20,9 +20,9 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "matrix.h"
-
 #ifndef PatternAttract_H
+
+#include "matrix.h"
 
 class PatternAttract : public Drawable {
 private:
@@ -64,8 +64,12 @@ public:
 
             boid.update();
 	    // backgroundLayer.drawPixel(boid.location.x, boid.location.y, effects.ColorFromCurrentPalette(boid.colorIndex));
-            effects.leds[XY(boid.location.x, boid.location.y)] = effects.ColorFromCurrentPalette(boid.colorIndex);
-            //matrix->drawPixel(boid.location.x, boid.location.y, 0XFFF000);
+	    // this writes an out of bounds pixel that looks bad
+            //effects.leds[XY(boid.location.x, boid.location.y)] = effects.ColorFromCurrentPalette(boid.colorIndex);
+	    // drawPixel takes care of it
+	    CRGB color = effects.ColorFromCurrentPalette(boid.colorIndex);
+            matrix->setPassThruColor(color.r*65536+color.g*256+color.b);
+            matrix->drawPixel(boid.location.x, boid.location.y, color);
 
             boids[i] = boid;
         }
