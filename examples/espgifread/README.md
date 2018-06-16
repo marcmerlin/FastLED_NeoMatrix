@@ -1,4 +1,4 @@
-New demo to display gifs read from SPIFFS
+New demo to display gifs read from SPIFFS from ESP8266 (should also work on ESP32).
  
 Decoding engine from Jason Coon, Aurora.
 https://github.com/pixelmatix/aurora/

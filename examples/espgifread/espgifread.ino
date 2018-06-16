@@ -1,13 +1,20 @@
-#include <FS.h>
+// http://esp8266.github.io/Arduino/versions/2.3.0/doc/filesystem.html#uploading-files-to-file-system
 // esp8266com/esp8266/libraries/SD/src/File.cpp
+#include <FS.h>
+
 #include "config.h"
 
 #include "GifPlayer.h"
 GifPlayer gifPlayer;
 
+#if defined(ESP8266) || defined(ESP32)
 extern "C" {
 #include "user_interface.h"
 }
+#else
+#error This code uses SPIFFS on ESPxx chips
+#endif
+
 
 void display_resolution() {
     matrix->setTextSize(1);
@@ -146,6 +153,8 @@ void loop() {
 
 void setup() {
     Serial.begin(115200);
+
+#ifdef ESP8266
     Serial.println();
     Serial.print( F("Heap: ") ); Serial.println(system_get_free_heap_size());
     Serial.print( F("Boot Vers: ") ); Serial.println(system_get_boot_version());
@@ -156,6 +165,7 @@ void setup() {
     Serial.print( F("Flash Size: ") ); Serial.println(ESP.getFlashChipRealSize());
     Serial.print( F("Vcc: ") ); Serial.println(ESP.getVcc());
     Serial.println();
+#endif
 
     SPIFFS.begin();
     {
