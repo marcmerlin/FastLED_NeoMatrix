@@ -5,8 +5,6 @@
 #include "Attractor.h"
 #include "Geometry.h"
 
-Effects effects;
-
 #include "PatternAttract.h"
 PatternAttract attract;
 #include "PatternBounce.h"
