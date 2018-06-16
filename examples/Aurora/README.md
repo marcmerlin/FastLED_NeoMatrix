@@ -16,8 +16,7 @@ Enjoy.
 
 Demo Video
 ----------
-
-<a href="https://vimeo.com/user5888427/smartmatrixoverview" target="_blank">![SmartMatrix Demo Video](http://docs.pixelmatix.com/SmartMatrix/photos/GithubAuroraReadmeVimeoLink.png)</a>
+https://www.youtube.com/watch?v=aSmzBiJQavk
 
 
 Acknowledgements
