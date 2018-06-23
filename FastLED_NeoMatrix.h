@@ -83,6 +83,8 @@
 class FastLED_NeoMatrix : public Adafruit_GFX {
 
  public:
+  // pre-computed gamma table
+  uint8_t gamma[256];
 
   // Constructor for single matrix:
   FastLED_NeoMatrix(CRGB *, uint8_t w, uint8_t h, 
@@ -94,13 +96,15 @@ class FastLED_NeoMatrix : public Adafruit_GFX {
     uint8_t matrixType = NEO_MATRIX_TOP + NEO_MATRIX_LEFT + NEO_MATRIX_ROWS +
                          NEO_TILE_TOP + NEO_TILE_LEFT + NEO_TILE_ROWS);
 
+
   int XY(int16_t x, int16_t y); // compat with FastLED code, returns 1D offset
   void
     drawPixel(int16_t x, int16_t y, uint16_t color),
     fillScreen(uint16_t color),
     setPassThruColor(uint32_t c),
     setPassThruColor(void),
-    setRemapFunction(uint16_t (*fn)(uint16_t, uint16_t));
+    setRemapFunction(uint16_t (*fn)(uint16_t, uint16_t)),
+    precal_gamma(float);
 
   static uint16_t
     Color(uint8_t r, uint8_t g, uint8_t b);

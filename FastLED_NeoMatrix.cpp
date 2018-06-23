@@ -239,4 +239,10 @@ void FastLED_NeoMatrix::setRemapFunction(uint16_t (*fn)(uint16_t, uint16_t)) {
   remapFn = fn;
 }
 
+void FastLED_NeoMatrix::precal_gamma(float gam) {
+  for (uint8_t i =0; i<255; i++) {
+    gamma[i] = applyGamma_video(i, gam);
+  }
+}
+
 // vim:sts=2:sw=2
