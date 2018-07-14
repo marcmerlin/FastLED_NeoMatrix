@@ -1,4 +1,15 @@
-New demo to display gifs read from SPIFFS from ESP8266 (should also work on ESP32).
+AnimatedGIFs replacement
+------------------------
+Please go to 
+- http://marc.merlins.org/perso/arduino/post_2018-07-13_AnimatedGIFs-for-SmartMatrix-or-NeoMatrix-_Neopixel-WS2812B_-from-SDcard-or-SPIFFS_-on-Teensy-3_x_-ESP8266_-or-ESP32.html
+- https://github.com/marcmerlin/AnimatedGIFs
+
+for a better/newer version of this code.
+
+
+Original Text
+-------------
+Demo to display gifs read from SPIFFS from ESP8266 (should also work on ESP32).
  
 Decoding engine from Jason Coon, Aurora.
 https://github.com/pixelmatix/aurora/
