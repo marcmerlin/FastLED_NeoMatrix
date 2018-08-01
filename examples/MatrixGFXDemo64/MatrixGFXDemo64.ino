@@ -2,6 +2,14 @@
 // By Marc MERLIN <marc_soft@merlins.org>
 // Contains code (c) Adafruit, license BSD
 
+//#define P32BY8X4
+#define P64BY64
+
+#ifdef P64BY64
+#define FASTLED_ALLOW_INTERRUPTS 0
+#define FASTLED_SHOW_CORE 0
+#endif
+
 #include <Adafruit_GFX.h>
 #include <FastLED_NeoMatrix.h>
 #include <FastLED.h>
@@ -15,19 +23,57 @@
  #define PSTR // Make Arduino Due happy
 #endif
 
+
 // Allow temporaly dithering, does not work with ESP32 right now
 #ifndef ESP32
 #define delay FastLED.delay
+#else
+FASTLED_USING_NAMESPACE
+// -- Task handles for use in the notifications
+static TaskHandle_t FastLEDshowTaskHandle = 0;
+static TaskHandle_t userTaskHandle = 0;
+
+void FastLEDshowESP32()
+{
+    if (userTaskHandle == 0) {
+	const TickType_t xMaxBlockTime = pdMS_TO_TICKS( 200 );
+	// -- Store the handle of the current task, so that the show task can
+	//    notify it when it's done
+	userTaskHandle = xTaskGetCurrentTaskHandle();
+
+	// -- Trigger the show task
+	xTaskNotifyGive(FastLEDshowTaskHandle);
+
+	// -- Wait to be notified that it's done
+	ulTaskNotifyTake(pdTRUE,portMAX_DELAY);
+	userTaskHandle = 0;
+    }
+}
+
+void FastLEDshowTask(void *pvParameters)
+{
+    const TickType_t xMaxBlockTime = pdMS_TO_TICKS( 500 );
+    // -- Run forever...
+    for(;;) {
+	// -- Wait for the trigger
+	ulTaskNotifyTake(pdTRUE,portMAX_DELAY);
+
+	// -- Do the show (synchronously)
+	FastLED.show();
+
+	// -- Notify the calling task
+	xTaskNotifyGive(userTaskHandle);
+    }
+}
 #endif
 
 #if defined(ESP32) or defined(ESP8266)
-#define PIN 12 // GPIO5 = D1
+#define PIN 5 // GPIO5 = D1
 #else
 #define PIN 13
 #endif
 
 
-//#define P32BY8X4
 #define P16BY16X4
 //#define P32BY8X3
 #if defined(P32BY8X4) || defined(P16BY16X4) || defined(P32BY8X3)
@@ -74,7 +120,20 @@
 //     will be rotated 180 degrees (this is normal -- simplifies wiring).
 //   See example below for these values in action.
 
-#ifdef P32BY8X4
+#ifdef P64BY64
+#define NUM_STRIPS 2
+#define NUM_LEDS_PER_STRIP 256
+// Define full matrix width and height.
+#define mw 64
+#define mh 8
+#define NUMMATRIX (mw*mh)
+CRGB leds[NUMMATRIX];
+// Define matrix width and height.
+FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(leds, mw, mh, 
+  NEO_MATRIX_TOP     + NEO_MATRIX_RIGHT +
+    NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG);
+
+#elif defined(P32BY8X4
 // Define full matrix width and height.
 #define mw 32
 #define mh 32
@@ -334,6 +393,13 @@ static const uint16_t PROGMEM
 	0x000, 0x000, 0x00F, 0x00F, 0x00F, 0x00F, 0x000, 0x000, },
 };
 
+
+
+void matrix_show() {
+    //matrix->show();
+    FastLEDshowESP32();
+}
+
 void matrix_clear() {
     // clear does not work properly with multiple matrices connected via parallel inputs
     memset(leds, 0, sizeof(leds));
@@ -384,13 +450,13 @@ void count_pixels() {
 	    // depending on the matrix size, it's too slow to display each pixel, so
 	    // make the scan init faster. This will however be too fast on a small matrix.
 	    #ifdef ESP8266
-	    if (!(j%3)) matrix->show();
+	    if (!(j%3)) matrix_show();
 	    yield(); // reset watchdog timer
 	    #elif ESP32
 	    delay(1);
-	    matrix->show();
+	    matrix_show();
 	    #else 
-	    matrix->show();
+	    matrix_show();
 	    #endif
 	}
     }
@@ -403,7 +469,7 @@ void display_four_white() {
     matrix->drawRect(1,1, mw-2,mh-2, LED_WHITE_MEDIUM);
     matrix->drawRect(2,2, mw-4,mh-4, LED_WHITE_LOW);
     matrix->drawRect(3,3, mw-6,mh-6, LED_WHITE_VERYLOW);
-    matrix->show();
+    matrix_show();
 }
 
 void display_bitmap(uint8_t bmp_num, uint16_t color) { 
@@ -418,7 +484,7 @@ void display_bitmap(uint8_t bmp_num, uint16_t color) {
     if (bmx >= mw) bmx = 0;
     if (!bmx) bmy += 8;
     if (bmy >= mh) bmy = 0;
-    matrix->show();
+    matrix_show();
 }
 
 void display_rgbBitmap(uint8_t bmp_num) { 
@@ -429,7 +495,7 @@ void display_rgbBitmap(uint8_t bmp_num) {
     if (bmx >= mw) bmx = 0;
     if (!bmx) bmy += 8;
     if (bmy >= mh) bmy = 0;
-    matrix->show();
+    matrix_show();
 }
 
 void display_lines() {
@@ -450,7 +516,7 @@ void display_lines() {
     // Diagonal blue line.
     matrix->drawLine(0,0, mw-1,mh-1, LED_BLUE_HIGH);
     matrix->drawLine(0,mh-1, mw-1,0, LED_ORANGE_MEDIUM);
-    matrix->show();
+    matrix_show();
 }
 
 void display_boxes() {
@@ -459,7 +525,7 @@ void display_boxes() {
     matrix->drawRect(1,1, mw-2,mh-2, LED_GREEN_MEDIUM);
     matrix->fillRect(2,2, mw-4,mh-4, LED_RED_HIGH);
     matrix->fillRect(3,3, mw-6,mh-6, LED_ORANGE_MEDIUM);
-    matrix->show();
+    matrix_show();
 }
 
 void display_circles() {
@@ -470,7 +536,7 @@ void display_circles() {
     matrix->drawCircle(1,mh-2, 1, LED_GREEN_LOW);
     matrix->drawCircle(mw-2,1, 1, LED_GREEN_HIGH);
     if (min(mw,mh)>12) matrix->drawCircle(mw/2-1, mh/2-1, min(mh/2-1,mw/2-1), LED_CYAN_HIGH);
-    matrix->show();
+    matrix_show();
 }
 
 void display_resolution() {
@@ -498,7 +564,7 @@ void display_resolution() {
 	} else {
 	    // we're not tall enough either, so we wait and display
 	    // the 2nd value on top.
-	    matrix->show();
+	    matrix_show();
 	    delay(2000);
 	    matrix_clear();
 	    matrix->setCursor(mw-11, 0);
@@ -529,7 +595,7 @@ void display_resolution() {
 	}
     }
     
-    matrix->show();
+    matrix_show();
 }
 
 void display_scrollText() {
@@ -549,7 +615,7 @@ void display_scrollText() {
 	    matrix->setTextColor(LED_ORANGE_HIGH);
 	    matrix->print("World");
 	}
-	matrix->show();
+	matrix_show();
        delay(50);
     }
 
@@ -561,14 +627,14 @@ void display_scrollText() {
 	matrix_clear();
 	matrix->setCursor(x,mw/2-size*4);
 	matrix->print("Rotate");
-	matrix->show();
+	matrix_show();
 	// note that on a big array the refresh rate from show() will be slow enough that
 	// the delay become irrelevant. This is already true on a 32x32 array.
         delay(50/size);
     }
     matrix->setRotation(0);
     matrix->setCursor(0,0);
-    matrix->show();
+    matrix_show();
 }
 
 // Scroll within big bitmap so that all if it becomes visible or bounce a small one.
@@ -602,7 +668,7 @@ void display_panOrBounceBitmap (uint8_t bitmapSize) {
 #ifdef BM32
 	if (bitmapSize == 32) matrix->drawRGBBitmap(x, y, (const uint16_t *) bitmap32, bitmapSize, bitmapSize);
 #endif
-	matrix->show();
+	matrix_show();
 	 
 	// Only pan if the display size is smaller than the pixmap
 	// but not if the difference is too small or it'll look bad.
@@ -654,9 +720,9 @@ void loop() {
     // 200 displays in 13 seconds = 15 frames per second for 4096 pixels
     for (uint8_t i=0; i<100; i++) { 
 	matrix->fillScreen(LED_BLUE_LOW);
-	matrix->show();
+	matrix_show();
 	matrix->fillScreen(LED_RED_LOW);
-	matrix->show();
+	matrix_show();
     }
 #endif
 
@@ -743,12 +809,20 @@ void loop() {
 }
 
 void setup() {
-#ifdef defined(P32BY8X3)
+#if defined(P64BY64)
+    xTaskCreatePinnedToCore(FastLEDshowTask, "FastLEDshowTask", 2048, NULL, 2, &FastLEDshowTaskHandle, FASTLED_SHOW_CORE);
+    // hardcoded out put for pins 12-19,0,2,3,4,5,21,22,23
+    // https://raw.githubusercontent.com/hpwit/fastled-esp32-16PINS/master/Perf.png
+    // https://raw.githubusercontent.com/hpwit/fastled-esp32-16PINS/master/README.md
+    // https://github.com/hpwit/fastled-esp32-16PINS
+    FastLED.addLeds<WS2811_PORTA,NUM_STRIPS,0b1100000000000000000>(leds, NUM_LEDS_PER_STRIP); 
+#elif defined(P32BY8X3)
     // Parallel output
     FastLED.addLeds<WS2811_PORTA,3>(leds, NUMMATRIX/3).setCorrection(TypicalLEDStrip);
 #else
     FastLED.addLeds<NEOPIXEL,PIN>(  leds, NUMMATRIX  ).setCorrection(TypicalLEDStrip);
 #endif
+    
     // Time for serial port to work?
     delay(1000);
     Serial.begin(115200);
@@ -769,10 +843,72 @@ void setup() {
 #define DISABLE_WHITE
 #ifndef DISABLE_WHITE
     matrix->fillScreen(LED_WHITE_HIGH);
-    matrix->show();
+    matrix_show();
     delay(3000);
     matrix_clear();
 #endif
 }
 
 // vim:sts=4:sw=4
+
+/*
+ platforms/esp/32/clockless_esp32.h
+* ESP32 support is provided using the RMT peripheral device -- a unit
+* on the chip designed specifically for generating (and receiving)
+* precisely-timed digital signals. Nominally for use in infrared
+* remote controls, we use it to generate the signals for clockless
+* LED strips. The main advantage of using the RMT device is that,
+* once programmed, it generates the signal asynchronously, allowing
+* the CPU to continue executing other code. It is also not vulnerable
+* to interrupts or other timing problems that could disrupt the signal.
+*
+* The implementation strategy is borrowed from previous work and from
+* the RMT support built into the ESP32 IDF. The RMT device has 8
+* channels, which can be programmed independently to send sequences
+* of high/low bits. Memory for each channel is limited, however, so
+* in order to send a long sequence of bits, we need to continuously
+* refill the buffer until all the data is sent. To do this, we fill
+* half the buffer and then set an interrupt to go off when that half
+* is sent. Then we refill that half while the second half is being
+* sent. This strategy effectively overlaps computation (by the CPU)
+* and communication (by the RMT).
+*
+* Since the RMT device only has 8 channels, we need a strategy to
+* allow more than 8 LED controllers. Our driver assigns controllers
+* to channels on the fly, queuing up controllers as necessary until a
+* channel is free. The main showPixels routine just fires off the
+* first 8 controllers; the interrupt handler starts new controllers
+* asynchronously as previous ones finish. So, for example, it can
+* send the data for 8 controllers simultaneously, but 16 controllers
+* would take approximately twice as much time.
+*
+* There is a #define that allows a program to control the total
+* number of channels that the driver is allowed to use. It defaults
+* to 8 -- use all the channels. Setting it to 1, for example, results
+* in fully serial output:
+*
+*     #define FASTLED_RMT_MAX_CHANNELS 1
+*
+* OTHER RMT APPLICATIONS
+*
+* The default FastLED driver takes over control of the RMT interrupt
+* handler, making it hard to use the RMT device for other
+* (non-FastLED) purposes. You can change it's behavior to use the ESP
+* core driver instead, allowing other RMT applications to
+* co-exist. To switch to this mode, add the following directive
+* before you include FastLED.h:
+*
+*      #define FASTLED_RMT_BUILTIN_DRIVER
+*
+* There may be a performance penalty for using this mode. We need to
+* compute the RMT signal for the entire LED strip ahead of time,
+* rather than overlapping it with communication. We also need a large
+* buffer to hold the signal specification. Each bit of pixel data is
+* represented by a 32-bit pulse specification, so it is a 32X blow-up
+* in memory use.
+*
+*
+* Based on public domain code created 19 Nov 2016 by Chris Osborn <fozztexx@fozztexx.com>
+* http://insentricity.com *
+*
+*/
