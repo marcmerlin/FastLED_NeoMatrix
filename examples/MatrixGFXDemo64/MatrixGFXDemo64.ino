@@ -3,9 +3,11 @@
 // Contains code (c) Adafruit, license BSD
 
 //#define P32BY8X4
-#define P64BY64
+#define DISABLE_WHITE
+//#define P64BY64
+#define P32BY64
 
-#ifdef P64BY64
+#if defined(P32BY64) || defined(P64BY64)
 #define FASTLED_ALLOW_INTERRUPTS 0
 #define FASTLED_SHOW_CORE 0
 #endif
@@ -68,7 +70,7 @@ void FastLEDshowTask(void *pvParameters)
 #endif
 
 #if defined(ESP32) or defined(ESP8266)
-#define PIN 5 // GPIO5 = D1
+#define PIN 5
 #else
 #define PIN 13
 #endif
@@ -88,7 +90,7 @@ void FastLEDshowTask(void *pvParameters)
 
 // Max is 255, 32 is a conservative value to not overload
 // a USB power supply (500mA) for 12x12 pixels.
-#define BRIGHTNESS 16
+#define BRIGHTNESS 64
 
 // https://learn.adafruit.com/adafruit-neopixel-uberguide/neomatrix-library
 // MATRIX DECLARATION:
@@ -121,19 +123,32 @@ void FastLEDshowTask(void *pvParameters)
 //   See example below for these values in action.
 
 #ifdef P64BY64
-#define NUM_STRIPS 2
+#define NUM_STRIPS 8
 #define NUM_LEDS_PER_STRIP 256
 // Define full matrix width and height.
 #define mw 64
-#define mh 8
+#define mh 32
 #define NUMMATRIX (mw*mh)
 CRGB leds[NUMMATRIX];
 // Define matrix width and height.
 FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(leds, mw, mh, 
-  NEO_MATRIX_TOP     + NEO_MATRIX_RIGHT +
+  NEO_MATRIX_TOP     + NEO_MATRIX_LEFT +
     NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG);
 
-#elif defined(P32BY8X4
+#elif defined(P32BY64)
+#define NUM_STRIPS 8
+#define NUM_LEDS_PER_STRIP 256
+// Define full matrix width and height.
+#define mw 32
+#define mh 64
+#define NUMMATRIX (mw*mh)
+CRGB leds[NUMMATRIX];
+// Define matrix width and height.
+FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(leds, mw, mh, 
+  NEO_MATRIX_BOTTOM + NEO_MATRIX_LEFT +
+    NEO_MATRIX_COLUMNS + NEO_MATRIX_ZIGZAG);
+
+#elif defined(P32BY8X4)
 // Define full matrix width and height.
 #define mw 32
 #define mh 32
@@ -729,7 +744,9 @@ void loop() {
     Serial.println("Count pixels");
     count_pixels();
     Serial.println("Count pixels done");
-    delay(1000);
+//    delay(3000);
+//    matrix_clear();
+//return;
 
     display_four_white();
     delay(3000);
@@ -809,13 +826,16 @@ void loop() {
 }
 
 void setup() {
-#if defined(P64BY64)
+#if defined(P32BY64) || defined(P64BY64)
     xTaskCreatePinnedToCore(FastLEDshowTask, "FastLEDshowTask", 2048, NULL, 2, &FastLEDshowTaskHandle, FASTLED_SHOW_CORE);
-    // hardcoded out put for pins 12-19,0,2,3,4,5,21,22,23
+    // hardcoded out put for pins 0,2,3 (RX),4,5,12-19,21,22,23
+    // 16 17 18 19 21 22 23 24
     // https://raw.githubusercontent.com/hpwit/fastled-esp32-16PINS/master/Perf.png
     // https://raw.githubusercontent.com/hpwit/fastled-esp32-16PINS/master/README.md
     // https://github.com/hpwit/fastled-esp32-16PINS
-    FastLED.addLeds<WS2811_PORTA,NUM_STRIPS,0b1100000000000000000>(leds, NUM_LEDS_PER_STRIP); 
+    //FastLED.addLeds<WS2812B_PORTA,NUM//_STRIPS,0b11011>(leds, NUM_LEDS_PER_STRIP); 
+    FastLED.addLeds<WS2811_PORTA,NUM_STRIPS,((1<<0) + (1<<2) + (1<<4) + (1<<5) + (1<<12) + (1<<13) + (1<<14) + (1<<15))>(leds, NUM_LEDS_PER_STRIP); 
+    //FastLED.addLeds<WS2811_PORTA,NUM_STRIPS,0>(leds, NUM_LEDS_PER_STRIP); 
 #elif defined(P32BY8X3)
     // Parallel output
     FastLED.addLeds<WS2811_PORTA,3>(leds, NUMMATRIX/3).setCorrection(TypicalLEDStrip);
@@ -840,7 +860,6 @@ void setup() {
     Serial.println("If the code crashes here, decrease the brightness or turn off the all white display below");
     // Test full bright of all LEDs. If brightness is too high
     // for your current limit (i.e. USB), decrease it.
-#define DISABLE_WHITE
 #ifndef DISABLE_WHITE
     matrix->fillScreen(LED_WHITE_HIGH);
     matrix_show();
