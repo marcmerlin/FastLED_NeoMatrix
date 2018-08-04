@@ -4,8 +4,8 @@
 
 //#define P32BY8X4
 #define DISABLE_WHITE
-//#define P64BY64
-#define P32BY64
+#define P64BY64
+//#define P32BY64
 
 #if defined(P32BY64) || defined(P64BY64)
 #define FASTLED_ALLOW_INTERRUPTS 0
@@ -90,7 +90,7 @@ void FastLEDshowTask(void *pvParameters)
 
 // Max is 255, 32 is a conservative value to not overload
 // a USB power supply (500mA) for 12x12 pixels.
-#define BRIGHTNESS 64
+#define BRIGHTNESS 255
 
 // https://learn.adafruit.com/adafruit-neopixel-uberguide/neomatrix-library
 // MATRIX DECLARATION:
@@ -835,6 +835,7 @@ void setup() {
     // https://github.com/hpwit/fastled-esp32-16PINS
     //FastLED.addLeds<WS2812B_PORTA,NUM//_STRIPS,0b11011>(leds, NUM_LEDS_PER_STRIP); 
     FastLED.addLeds<WS2811_PORTA,NUM_STRIPS,((1<<0) + (1<<2) + (1<<4) + (1<<5) + (1<<12) + (1<<13) + (1<<14) + (1<<15))>(leds, NUM_LEDS_PER_STRIP); 
+    //FastLED.addLeds<WS2812B_PORTA,NUM_STRIPS,((1<<0) + (1<<2) + (1<<4) + (1<<5) + (1<<12) + (1<<13) + (1<<14) + (1<<15))>(leds, NUM_LEDS_PER_STRIP); 
     //FastLED.addLeds<WS2811_PORTA,NUM_STRIPS,0>(leds, NUM_LEDS_PER_STRIP); 
 #elif defined(P32BY8X3)
     // Parallel output
@@ -863,7 +864,7 @@ void setup() {
 #ifndef DISABLE_WHITE
     matrix->fillScreen(LED_WHITE_HIGH);
     matrix_show();
-    delay(3000);
+    delay(5000);
     matrix_clear();
 #endif
 }
