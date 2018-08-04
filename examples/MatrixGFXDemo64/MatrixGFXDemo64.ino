@@ -4,6 +4,8 @@
 
 //#define P32BY8X4
 #define DISABLE_WHITE
+// Use serialized output instead of parallel output
+#define SERIAL_OUTPUT
 #define P64BY64
 //#define P32BY64
 
@@ -191,6 +193,13 @@ FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(leds, mw, mh,
     NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG);
 #endif
 
+void matrix_show() {
+#ifdef SERIAL_OUTPUT
+    matrix->show();
+#else
+    FastLEDshowESP32();
+#endif
+}
 
 
 // This could also be defined as matrix->color(255,0,0) but those defines
@@ -408,12 +417,6 @@ static const uint16_t PROGMEM
 	0x000, 0x000, 0x00F, 0x00F, 0x00F, 0x00F, 0x000, 0x000, },
 };
 
-
-
-void matrix_show() {
-    //matrix->show();
-    FastLEDshowESP32();
-}
 
 void matrix_clear() {
     // clear does not work properly with multiple matrices connected via parallel inputs
@@ -827,16 +830,28 @@ void loop() {
 
 void setup() {
 #if defined(P32BY64) || defined(P64BY64)
-    xTaskCreatePinnedToCore(FastLEDshowTask, "FastLEDshowTask", 2048, NULL, 2, &FastLEDshowTaskHandle, FASTLED_SHOW_CORE);
-    // hardcoded out put for pins 0,2,3 (RX),4,5,12-19,21,22,23
-    // 16 17 18 19 21 22 23 24
-    // https://raw.githubusercontent.com/hpwit/fastled-esp32-16PINS/master/Perf.png
-    // https://raw.githubusercontent.com/hpwit/fastled-esp32-16PINS/master/README.md
-    // https://github.com/hpwit/fastled-esp32-16PINS
-    //FastLED.addLeds<WS2812B_PORTA,NUM//_STRIPS,0b11011>(leds, NUM_LEDS_PER_STRIP); 
-    FastLED.addLeds<WS2811_PORTA,NUM_STRIPS,((1<<0) + (1<<2) + (1<<4) + (1<<5) + (1<<12) + (1<<13) + (1<<14) + (1<<15))>(leds, NUM_LEDS_PER_STRIP); 
-    //FastLED.addLeds<WS2812B_PORTA,NUM_STRIPS,((1<<0) + (1<<2) + (1<<4) + (1<<5) + (1<<12) + (1<<13) + (1<<14) + (1<<15))>(leds, NUM_LEDS_PER_STRIP); 
-    //FastLED.addLeds<WS2811_PORTA,NUM_STRIPS,0>(leds, NUM_LEDS_PER_STRIP); 
+    #ifdef SERIAL_OUTPUT
+	// https://github.com/FastLED/FastLED/wiki/Multiple-Controller-Examples
+	FastLED.addLeds<WS2812B, 0, GRB>(leds, 0*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
+	FastLED.addLeds<WS2812B, 2, GRB>(leds, 1*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
+	FastLED.addLeds<WS2812B, 4, GRB>(leds, 2*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
+	FastLED.addLeds<WS2812B, 5, GRB>(leds, 3*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
+	FastLED.addLeds<WS2812B,12, GRB>(leds, 4*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
+	FastLED.addLeds<WS2812B,13, GRB>(leds, 5*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
+	FastLED.addLeds<WS2812B,14, GRB>(leds, 6*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
+	FastLED.addLeds<WS2812B,15, GRB>(leds, 7*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
+    #else
+	xTaskCreatePinnedToCore(FastLEDshowTask, "FastLEDshowTask", 2048, NULL, 2, &FastLEDshowTaskHandle, FASTLED_SHOW_CORE);
+	// hardcoded out put for pins 0,2,3 (RX),4,5,12-19,21,22,23
+	// 16 17 18 19 21 22 23 24
+	// https://raw.githubusercontent.com/hpwit/fastled-esp32-16PINS/master/Perf.png
+	// https://raw.githubusercontent.com/hpwit/fastled-esp32-16PINS/master/README.md
+	// https://github.com/hpwit/fastled-esp32-16PINS
+	//FastLED.addLeds<WS2812B_PORTA,NUM//_STRIPS,0b11011>(leds, NUM_LEDS_PER_STRIP); 
+	FastLED.addLeds<WS2811_PORTA,NUM_STRIPS,((1<<0) + (1<<2) + (1<<4) + (1<<5) + (1<<12) + (1<<13) + (1<<14) + (1<<15))>(leds, NUM_LEDS_PER_STRIP); 
+	//FastLED.addLeds<WS2812B_PORTA,NUM_STRIPS,((1<<0) + (1<<2) + (1<<4) + (1<<5) + (1<<12) + (1<<13) + (1<<14) + (1<<15))>(leds, NUM_LEDS_PER_STRIP); 
+	//FastLED.addLeds<WS2811_PORTA,NUM_STRIPS,0>(leds, NUM_LEDS_PER_STRIP); 
+    #endif
 #elif defined(P32BY8X3)
     // Parallel output
     FastLED.addLeds<WS2811_PORTA,3>(leds, NUMMATRIX/3).setCorrection(TypicalLEDStrip);
