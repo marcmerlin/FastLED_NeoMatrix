@@ -34,10 +34,10 @@
 class PatternCube : public Drawable {
   private:
     float focal = 30; // Focal of the camera
-    int cubeWidth = 28; // Cube size
+    int cubeWidth = min(MATRIX_WIDTH-2,MATRIX_HEIGHT-2); // Cube size
     float Angx = 20.0, AngxSpeed = 0.05; // rotation (angle+speed) around X-axis
     float Angy = 10.0, AngySpeed = 0.05; // rotation (angle+speed) around Y-axis
-    float Ox = 15.5, Oy = 15.5; // position (x,y) of the frame center
+    float Ox = MATRIX_WIDTH/2, Oy = MATRIX_HEIGHT/2; // position (x,y) of the frame center
     int zCamera = 110; // distance from cube to the eye of the camera
 
     // Local vertices

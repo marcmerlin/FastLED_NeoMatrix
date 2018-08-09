@@ -26,7 +26,7 @@
 
 class PatternBounce : public Drawable {
 private:
-    static const int count = 32;
+    static const int count = MATRIX_WIDTH;
     PVector gravity = PVector(0, 0.0125);
 
 public:

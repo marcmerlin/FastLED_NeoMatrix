@@ -90,7 +90,7 @@ void loop() {
     if (readchar == 'n')      { Serial.println("Serial => next"); new_pattern = 1;  item++;}
     else if (readchar == 'p') { Serial.println("Serial => previous"); new_pattern = 1; item--;}
 
-    EVERY_N_SECONDS(20) {
+    EVERY_N_SECONDS(40) {
 	new_pattern = 1;
 	item++;
     }
