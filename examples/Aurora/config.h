@@ -62,7 +62,7 @@ FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(matrixleds, MATRIX_TILE_WIDTH,
 #define MATRIX_WIDTH mw
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 
-cLEDMatrix<-MATRIX_TILE_WIDTH, -MATRIX_TILE_HEIGHT, HORIZONTAL_ZIGZAG_MATRIX, MATRIX_TILE_H, MATRIX_TILE_V, HORIZONTAL_BLOCKS> ledmatrix;
+cLEDMatrix<MATRIX_TILE_WIDTH, MATRIX_TILE_HEIGHT, VERTICAL_ZIGZAG_MATRIX> ledmatrix;
 
 //
 //CRGB matrixleds[NUMMATRIX];
@@ -70,16 +70,16 @@ cLEDMatrix<-MATRIX_TILE_WIDTH, -MATRIX_TILE_HEIGHT, HORIZONTAL_ZIGZAG_MATRIX, MA
 // to act as a regular FastLED array.
 CRGB *matrixleds = ledmatrix[0];
 
-FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(matrixleds, MATRIX_TILE_WIDTH, MATRIX_TILE_HEIGHT,  NEO_MATRIX_TOP     + NEO_MATRIX_RIGHT +
-    NEO_MATRIX_COLUMNS + NEO_MATRIX_ZIGZAG + 
-    NEO_TILE_BOTTOM + NEO_TILE_LEFT );
+FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(matrixleds, MATRIX_TILE_WIDTH, MATRIX_TILE_HEIGHT,  
+    NEO_MATRIX_BOTTOM + NEO_MATRIX_LEFT +
+    NEO_MATRIX_COLUMNS + NEO_MATRIX_ZIGZAG );
 #endif
 
 
 uint8_t matrix_brightness = 32;
 
 int XY2( int x, int y, bool wrap=false) { 
-	return matrix->XY(x,MATRIX_HEIGHT-1-y);
+    return matrix->XY(x,MATRIX_HEIGHT-1-y);
 }
 
 
