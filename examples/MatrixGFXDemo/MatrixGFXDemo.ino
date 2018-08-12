@@ -21,15 +21,15 @@
 #endif
 
 #if defined(ESP32) or defined(ESP8266)
-#define PIN 5
+#define PIN 12 // GPIO5 = D1
 #else
 #define PIN 13
 #endif
 
 
 //#define P32BY8X4
-//#define P16BY16X4
-#define P32BY8X3
+#define P16BY16X4
+//#define P32BY8X3
 #if defined(P32BY8X4) || defined(P16BY16X4) || defined(P32BY8X3)
 #define BM32
 #endif
@@ -42,23 +42,9 @@
 
 // Max is 255, 32 is a conservative value to not overload
 // a USB power supply (500mA) for 12x12 pixels.
-#define BRIGHTNESS 32
+#define BRIGHTNESS 16
 
-// Define full matrix width and height.
-#if defined(P32BY8X4) || defined(P16BY16X4)
-    #define mw 32
-    #define mh 32
-#elif defined(P32BY8X3)
-    #define mw 24
-    #define mh 32
-#else
-    #define mw 16
-    #define mh 16
-#endif
-
-#define NUMMATRIX (mw*mh)
-CRGB leds[NUMMATRIX];
-
+// https://learn.adafruit.com/adafruit-neopixel-uberguide/neomatrix-library
 // MATRIX DECLARATION:
 // Parameter 1 = width of EACH NEOPIXEL MATRIX (not total display)
 // Parameter 2 = height of each matrix
@@ -90,27 +76,48 @@ CRGB leds[NUMMATRIX];
 
 #ifdef P32BY8X4
 // Define full matrix width and height.
-FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(leds, 8, mh, mw/8, 1, 
+#define mw 32
+#define mh 32
+#define NUMMATRIX (mw*mh)
+CRGB leds[NUMMATRIX];
+FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(leds, 8, 32, 4, 1, 
   NEO_MATRIX_TOP     + NEO_MATRIX_RIGHT +
     NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG + 
 // progressive vs zigzag makes no difference for a 4 arrays next to one another
     NEO_TILE_TOP + NEO_TILE_LEFT +  NEO_TILE_PROGRESSIVE);
+
 #elif defined(P16BY16X4)
-FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(leds, 16, mh, mw/16, mh/16, 
-  NEO_MATRIX_TOP     + NEO_MATRIX_RIGHT +
-    NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG + 
-    NEO_TILE_TOP + NEO_TILE_LEFT +  NEO_TILE_ZIGZAG);
+#define mw 32
+#define mh 32
+#define NUMMATRIX (mw*mh)
+CRGB leds[NUMMATRIX];
+FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(leds, 16, 16, 2, 2, 
+  NEO_MATRIX_BOTTOM     + NEO_MATRIX_RIGHT +
+    NEO_MATRIX_COLUMNS + NEO_MATRIX_ZIGZAG + 
+    NEO_TILE_TOP + NEO_TILE_RIGHT +  NEO_TILE_PROGRESSIVE);
+
 #elif defined(P32BY8X3)
-FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(leds, 8, mh, mw/8, 1, 
+#define mw 24
+#define mh 32
+#define NUMMATRIX (mw*mh)
+CRGB leds[NUMMATRIX];
+FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(leds, 8, 32, 3, 1, 
   NEO_MATRIX_TOP     + NEO_MATRIX_RIGHT +
     NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG + 
     NEO_TILE_TOP + NEO_TILE_LEFT +  NEO_TILE_PROGRESSIVE);
+
 #else
+#define mw 16
+#define mh 16
+#define NUMMATRIX (mw*mh)
+CRGB leds[NUMMATRIX];
 // Define matrix width and height.
 FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(leds, mw, mh, 
   NEO_MATRIX_TOP     + NEO_MATRIX_RIGHT +
     NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG);
 #endif
+
+
 
 // This could also be defined as matrix->color(255,0,0) but those defines
 // are meant to work for adafruit_gfx backends that are lacking color()
@@ -532,6 +539,7 @@ void display_scrollText() {
     matrix->setTextSize(1);
     matrix->setRotation(0);
     for (int8_t x=7; x>=-42; x--) {
+	yield();
 	matrix_clear();
 	matrix->setCursor(x,0);
 	matrix->setTextColor(LED_GREEN_HIGH);
@@ -549,6 +557,7 @@ void display_scrollText() {
     matrix->setTextSize(size);
     matrix->setTextColor(LED_BLUE_HIGH);
     for (int16_t x=8*size; x>=-6*8*size; x--) {
+	yield();
 	matrix_clear();
 	matrix->setCursor(x,mw/2-size*4);
 	matrix->print("Rotate");
@@ -734,22 +743,30 @@ void loop() {
 }
 
 void setup() {
-    FastLED.addLeds<NEOPIXEL,PIN>(leds, mw*mh).setCorrection(TypicalLEDStrip);
+#ifdef defined(P32BY8X3)
     // Parallel output
-    //FastLED.addLeds<WS2811_PORTA,3>(leds, NUMMATRIX/3).setCorrection(TypicalLEDStrip);
+    FastLED.addLeds<WS2811_PORTA,3>(leds, NUMMATRIX/3).setCorrection(TypicalLEDStrip);
+#else
+    FastLED.addLeds<NEOPIXEL,PIN>(  leds, NUMMATRIX  ).setCorrection(TypicalLEDStrip);
+#endif
     // Time for serial port to work?
     delay(1000);
     Serial.begin(115200);
+    Serial.print("Init on pin: ");
+    Serial.println(PIN);
     Serial.print("Matrix Size: ");
     Serial.print(mw);
     Serial.print(" ");
-    Serial.println(mh);
+    Serial.print(mh);
+    Serial.print(" ");
+    Serial.println(NUMMATRIX);
     matrix->begin();
     matrix->setTextWrap(false);
     matrix->setBrightness(BRIGHTNESS);
     Serial.println("If the code crashes here, decrease the brightness or turn off the all white display below");
     // Test full bright of all LEDs. If brightness is too high
     // for your current limit (i.e. USB), decrease it.
+//#define DISABLE_WHITE
 #ifndef DISABLE_WHITE
     matrix->fillScreen(LED_WHITE_HIGH);
     matrix->show();

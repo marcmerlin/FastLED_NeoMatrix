@@ -117,6 +117,8 @@ void matrix_setup() {
     // This is much faster 1000 updates in 10sec
     //FastLED.addLeds<NEOPIXEL,PIN>(matrixleds, NUMMATRIX); 
     FastLED.addLeds<WS2811_PORTA,3>(matrixleds, NUMMATRIX/3).setCorrection(TypicalLEDStrip);
+    Serial.print("Neomatrix parallel output, total LEDs: ");
+    Serial.println(NUMMATRIX);
 #else
     // https://github.com/FastLED/FastLED/wiki/Multiple-Controller-Examples
     FastLED.addLeds<WS2812B, 2, GRB>(matrixleds, 0*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
@@ -135,6 +137,8 @@ void matrix_setup() {
     FastLED.addLeds<WS2812B,25, GRB>(matrixleds,13*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
     FastLED.addLeds<WS2812B,26, GRB>(matrixleds,14*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
     FastLED.addLeds<WS2812B,27, GRB>(matrixleds,15*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP);
+    Serial.print("Neomatrix 16 way output, total LEDs: ");
+    Serial.println(NUMMATRIX);
 #endif
 
     FastLED.setBrightness(matrix_brightness);
