@@ -5,7 +5,7 @@
 //#define P32BY8X4
 #define DISABLE_WHITE
 // Use serialized output instead of parallel output
-#define SERIAL_OUTPUT
+//#define SERIAL_OUTPUT
 #define P64BY64
 //#define P32BY64
 
@@ -92,7 +92,7 @@ void FastLEDshowTask(void *pvParameters)
 
 // Max is 255, 32 is a conservative value to not overload
 // a USB power supply (500mA) for 12x12 pixels.
-#define BRIGHTNESS 255
+#define BRIGHTNESS 64
 
 // https://learn.adafruit.com/adafruit-neopixel-uberguide/neomatrix-library
 // MATRIX DECLARATION:
@@ -125,17 +125,20 @@ void FastLEDshowTask(void *pvParameters)
 //   See example below for these values in action.
 
 #ifdef P64BY64
-#define NUM_STRIPS 8
+#define NUM_STRIPS 16
 #define NUM_LEDS_PER_STRIP 256
 // Define full matrix width and height.
 #define mw 64
-#define mh 32
+#define mh 64
 #define NUMMATRIX (mw*mh)
 CRGB leds[NUMMATRIX];
 // Define matrix width and height.
+//FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(leds, mw, mh, 
+//  NEO_MATRIX_TOP     + NEO_MATRIX_LEFT +
+//    NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG);
 FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(leds, mw, mh, 
-  NEO_MATRIX_TOP     + NEO_MATRIX_LEFT +
-    NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG);
+  NEO_MATRIX_BOTTOM     + NEO_MATRIX_LEFT +
+    NEO_MATRIX_COLUMNS + NEO_MATRIX_ZIGZAG);
 
 #elif defined(P32BY64)
 #define NUM_STRIPS 8
@@ -671,7 +674,7 @@ void display_panOrBounceBitmap (uint8_t bitmapSize) {
     int16_t xfdir = -1;
     int16_t yfdir = -1;
 
-    for (uint16_t i=1; i<200; i++) {
+    for (uint16_t i=1; i<500; i++) {
 	bool updDir = false;
 
 	// Get actual x/y by dividing by 16.
@@ -742,17 +745,16 @@ void loop() {
 	matrix->fillScreen(LED_RED_LOW);
 	matrix_show();
     }
-#endif
 
     Serial.println("Count pixels");
     count_pixels();
     Serial.println("Count pixels done");
-//    delay(3000);
-//    matrix_clear();
-//return;
-
-    display_four_white();
     delay(3000);
+    matrix_clear();
+#endif
+
+//    display_four_white();
+//    delay(3000);
 
     Serial.print("Screen pixmap capacity: ");
     Serial.println(pixmap_count);
@@ -762,7 +764,7 @@ void loop() {
     {
 	display_rgbBitmap(0);
     }
-    delay(1000);
+    delay(5000);
 
     Serial.println("Display Resolution");
     display_resolution();
@@ -795,13 +797,14 @@ void loop() {
     display_lines();
     delay(3000);
 
-    display_boxes();
-    delay(3000);
+    //display_boxes();
+    //delay(3000);
 
     display_circles();
     delay(3000);
     matrix_clear();
 
+#if 0
     Serial.println("Display RGB bitmaps");
     for (uint8_t i=0; i<=(sizeof(RGB_bmp)/sizeof(RGB_bmp[0])-1); i++)
     {
@@ -814,16 +817,19 @@ void loop() {
     Serial.println("Scrolltext");
     display_scrollText();
 
+#endif
 #ifdef BM32
     Serial.println("bounce 32 bitmap");
     display_panOrBounceBitmap(32);
 #endif
+#if 0
     // pan a big pixmap
     Serial.println("pan/bounce 24 bitmap");
     display_panOrBounceBitmap(24);
     // bounce around a small one
     Serial.println("pan/bounce 8 bitmap");
     display_panOrBounceBitmap(8);
+#endif
 
     Serial.println("Demo loop done, starting over");
 }
@@ -832,14 +838,22 @@ void setup() {
 #if defined(P32BY64) || defined(P64BY64)
     #ifdef SERIAL_OUTPUT
 	// https://github.com/FastLED/FastLED/wiki/Multiple-Controller-Examples
-	FastLED.addLeds<WS2812B, 0, GRB>(leds, 0*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
-	FastLED.addLeds<WS2812B, 2, GRB>(leds, 1*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
-	FastLED.addLeds<WS2812B, 4, GRB>(leds, 2*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
-	FastLED.addLeds<WS2812B, 5, GRB>(leds, 3*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
-	FastLED.addLeds<WS2812B,12, GRB>(leds, 4*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
-	FastLED.addLeds<WS2812B,13, GRB>(leds, 5*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
-	FastLED.addLeds<WS2812B,14, GRB>(leds, 6*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
-	FastLED.addLeds<WS2812B,15, GRB>(leds, 7*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
+	FastLED.addLeds<WS2812B, 2, GRB>(leds, 0*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
+	FastLED.addLeds<WS2812B, 4, GRB>(leds, 1*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
+	FastLED.addLeds<WS2812B, 5, GRB>(leds, 2*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
+	FastLED.addLeds<WS2812B,12, GRB>(leds, 3*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
+	FastLED.addLeds<WS2812B,13, GRB>(leds, 4*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
+	FastLED.addLeds<WS2812B,14, GRB>(leds, 5*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
+	FastLED.addLeds<WS2812B,15, GRB>(leds, 6*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
+	FastLED.addLeds<WS2812B,16, GRB>(leds, 7*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
+	FastLED.addLeds<WS2812B,18, GRB>(leds, 8*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
+	FastLED.addLeds<WS2812B,19, GRB>(leds, 9*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
+	FastLED.addLeds<WS2812B,21, GRB>(leds,10*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
+	FastLED.addLeds<WS2812B,22, GRB>(leds,11*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
+	FastLED.addLeds<WS2812B,23, GRB>(leds,12*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
+	FastLED.addLeds<WS2812B,25, GRB>(leds,13*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
+	FastLED.addLeds<WS2812B,26, GRB>(leds,14*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
+	FastLED.addLeds<WS2812B,27, GRB>(leds,15*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
     #else
 	xTaskCreatePinnedToCore(FastLEDshowTask, "FastLEDshowTask", 2048, NULL, 2, &FastLEDshowTaskHandle, FASTLED_SHOW_CORE);
 	// hardcoded out put for pins 0,2,3 (RX),4,5,12-19,21,22,23
@@ -848,9 +862,14 @@ void setup() {
 	// https://raw.githubusercontent.com/hpwit/fastled-esp32-16PINS/master/README.md
 	// https://github.com/hpwit/fastled-esp32-16PINS
 	//FastLED.addLeds<WS2812B_PORTA,NUM//_STRIPS,0b11011>(leds, NUM_LEDS_PER_STRIP); 
-	FastLED.addLeds<WS2811_PORTA,NUM_STRIPS,((1<<0) + (1<<2) + (1<<4) + (1<<5) + (1<<12) + (1<<13) + (1<<14) + (1<<15))>(leds, NUM_LEDS_PER_STRIP); 
-	//FastLED.addLeds<WS2812B_PORTA,NUM_STRIPS,((1<<0) + (1<<2) + (1<<4) + (1<<5) + (1<<12) + (1<<13) + (1<<14) + (1<<15))>(leds, NUM_LEDS_PER_STRIP); 
-	//FastLED.addLeds<WS2811_PORTA,NUM_STRIPS,0>(leds, NUM_LEDS_PER_STRIP); 
+	// 2 4 5 13 15 ok
+	// 0 not ok, 12 and 14 not working on full panel
+	//FastLED.addLeds<WS2811_PORTA,NUM_STRIPS,((1<<16) + (1<<2) + (1<<4) + (1<<5) + (1<<17) + (1<<18) + (1<<19) + (1<<15))>(leds, NUM_LEDS_PER_STRIP); 
+	//FastLED.addLeds<WS2812B_PORTA,NUM_STRIPS,      ((1<<0) + (1<<2) + (1<<4) + (1<<5) + (1<<12) + (1<<13) + (1<<14) + (1<<15))>(leds, NUM_LEDS_PER_STRIP); 
+	// good FastLED.addLeds<WS2812B_PORTA,NUM_STRIPS,((1<<16) + (1<<2) + (1<<4) + (1<<5) + (1<<17) + (1<<13) + (1<<19) + (1<<15))>(leds, NUM_LEDS_PER_STRIP); 
+	//FastLED.addLeds<WS2812B_PORTA,NUM_STRIPS,((1<<2) + (1<<4) + (1<<5) + (1<<13)+ (1<<15) + (1<<16) + (1<<17) + (1<<18) )>(leds, NUM_LEDS_PER_STRIP); 
+	//FastLED.addLeds<WS2811_PORTA,NUM_STRIPS,((1<<2) + (1<<4) + (1<<5) + (1<<12)+ (1<<13) + (1<<14) + (1<<15) + (1<<16) )>(leds, NUM_LEDS_PER_STRIP); 
+	FastLED.addLeds<WS2811_PORTA,NUM_STRIPS,((1<<2) + (1<<4) + (1<<5) + (1<<12)+ (1<<13) + (1<<14) + (1<<15) + (1<<16) + (1<<18) + (1<<19) + (1<<21) + (1<<22) + (1<<23) + (1<<25) + (1<<26) + (1<<27)  )>(leds, NUM_LEDS_PER_STRIP); 
     #endif
 #elif defined(P32BY8X3)
     // Parallel output
