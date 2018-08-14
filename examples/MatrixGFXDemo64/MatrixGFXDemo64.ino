@@ -724,7 +724,8 @@ void display_panOrBounceBitmap (uint8_t bitmapSize) {
 	    xfc = constrain(xfc + random(-1, 2), 3, 16);
 	    yfc = constrain(xfc + random(-1, 2), 3, 16);
 	}
-	delay(10);
+	yield();
+	//delay(10);
     }
 }
 
@@ -745,16 +746,16 @@ void loop() {
 	matrix->fillScreen(LED_RED_LOW);
 	matrix_show();
     }
+#endif
 
     Serial.println("Count pixels");
-    count_pixels();
+    //count_pixels();
     Serial.println("Count pixels done");
     delay(3000);
     matrix_clear();
-#endif
 
-//    display_four_white();
-//    delay(3000);
+    display_four_white();
+    delay(3000);
 
     Serial.print("Screen pixmap capacity: ");
     Serial.println(pixmap_count);
@@ -804,7 +805,6 @@ void loop() {
     delay(3000);
     matrix_clear();
 
-#if 0
     Serial.println("Display RGB bitmaps");
     for (uint8_t i=0; i<=(sizeof(RGB_bmp)/sizeof(RGB_bmp[0])-1); i++)
     {
@@ -817,19 +817,16 @@ void loop() {
     Serial.println("Scrolltext");
     display_scrollText();
 
-#endif
 #ifdef BM32
     Serial.println("bounce 32 bitmap");
     display_panOrBounceBitmap(32);
 #endif
-#if 0
     // pan a big pixmap
     Serial.println("pan/bounce 24 bitmap");
     display_panOrBounceBitmap(24);
     // bounce around a small one
     Serial.println("pan/bounce 8 bitmap");
     display_panOrBounceBitmap(8);
-#endif
 
     Serial.println("Demo loop done, starting over");
 }

@@ -157,7 +157,7 @@ class PatternCube : public Drawable {
     }
 
     unsigned int drawFrame() {
-      uint8_t blurAmount = beatsin8(2, 10, 255);
+//      uint8_t blurAmount = beatsin8(2, 10, 255);
 
 #if FASTLED_VERSION >= 3001000
 //      blur2d(effects.leds, MATRIX_WIDTH, MATRIX_HEIGHT, blurAmount);

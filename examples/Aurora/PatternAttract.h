@@ -26,7 +26,7 @@
 
 class PatternAttract : public Drawable {
 private:
-    const int count = 25;
+    const int count = MATRIX_WIDTH/3;
     Attractor attractor;
 
 public:
