@@ -5,29 +5,17 @@
 // standalone examples.
 
 
+#include "config.h"
 #include <FastLED_NeoMatrix.h>
 #include <FastLED.h>
 
-#define mw 24
-#define mh 32
-#define NUMMATRIX (mw*mh)
-
-#define BRIGHTNESS 64
-
-// Add safety pixel off screen to deal with broken code trying to write
-// outside of the X,Y coordinates
-CRGB leds[NUMMATRIX+1];
-
-FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(leds, 8, mh, mw/8, 1, 
-  NEO_MATRIX_TOP     + NEO_MATRIX_RIGHT +
-    NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG + 
-    NEO_TILE_TOP + NEO_TILE_LEFT +  NEO_TILE_PROGRESSIVE);
 
 // compat with my code definitions
 #define MATRIX_TOTAL NUMMATRIX 
 #define NUM_LEDS NUMMATRIX 
 #define MATRIX_HEIGHT mh
 #define MATRIX_WIDTH mw
+#define leds matrixleds
 
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 
@@ -525,7 +513,7 @@ SimplePatternList gPatterns = { fire, theMatrix, coloredRain,  // 0-2
 };
 #endif
 // Only use patterns that work ok and look good
-SimplePatternList gPatterns = { fire, theMatrix, coloredRain,  // 0-2
+SimplePatternList gPatterns = { pride, fire, theMatrix, coloredRain,  // 0-2
 				stormyRain, pride  // 3-4
 };
 
@@ -542,9 +530,7 @@ void nextPattern()
 void setup() {
   delay( 1000 ); //safety startup delay
   Serial.begin(115200);
-  //FastLED.addLeds<LED_TYPE,DATA_PIN,COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
-  FastLED.addLeds<WS2811_PORTA,3>(leds, 256).setCorrection(TypicalLEDStrip);
-  FastLED.setBrightness(BRIGHTNESS);
+  matrix_setup();
   matrix->begin();
   Serial.println("Setup done");
 }
@@ -581,16 +567,7 @@ void loop()
 	// Call the current pattern function once, updating the 'leds' array
 	gPatterns[gCurrentPatternNumber]();
 
-	matrix->show();
+	matrix_show();
 	// feed watchdog
 	yield();
 }
-
-/* Currrently getting crashes
-Fatal exception 9(LoadStoreAlignmentCause):
-epc1=0x40202d5a, epc2=0x00000000, epc3=0x00000000, excvaddr=0x00000183, depc=0x0000000
- ets Jan  8 2013,rst cause:4, boot mode:(1,6)
-
-https://github.com/pellepl/spiffs/issues/56
-Look for the file spiffs_config.h - in there are all the build time config defines. Define SPIFFS_ALIGNED_OBJECT_INDEX_TABLES to 1.
-*/
