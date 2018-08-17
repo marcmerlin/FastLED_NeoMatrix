@@ -31,9 +31,9 @@
 #if defined(ESP8266)
 // If you get matrix flickering, modify platforms/esp/8266/clockless_esp8266.h 
 // and platforms/esp/8266/clockless_block_esp8266.h to change WAIT_TIME to 20
-#pragma message "If you get matrix corruption, turn off FASTLED_ALLOW_INTERRUPTS"
-#pragma message "in this library, or modify WAIT_TIME in platforms/esp/8266/clockless_esp8266.h"
-#pragma message "(raise it from 5 to 20 or up to 50 if needed)"
+//#pragma message "If you get matrix corruption, turn off FASTLED_ALLOW_INTERRUPTS"
+//#pragma message "in this library, or modify WAIT_TIME in platforms/esp/8266/clockless_esp8266.h"
+//#pragma message "(raise it from 5 to 20 or up to 50 if needed)"
 // Or if you don't need interrupts, you can disable them here
 //#define FASTLED_ALLOW_INTERRUPTS 0
 #endif
