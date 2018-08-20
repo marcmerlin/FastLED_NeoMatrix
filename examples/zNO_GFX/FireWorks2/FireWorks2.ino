@@ -13,38 +13,11 @@
 // Further adapted by Marc MERLIN for integration in FastLED::NeoMatrix
 // standalone examples.
 
-
-#include <FastLED_NeoMatrix.h>
-#include <FastLED.h>
-
-#define mw 24
-#define mh 32
-#define NUMMATRIX (mw*mh)
-
-#define BRIGHTNESS 64
-
-// Add safety pixel off screen to deal with broken code trying to write
-// outside of the X,Y coordinates
-CRGB leds[NUMMATRIX+1];
-
-FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(leds, 8, mh, mw/8, 1, 
-  NEO_MATRIX_TOP     + NEO_MATRIX_RIGHT +
-    NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG + 
-    NEO_TILE_TOP + NEO_TILE_LEFT +  NEO_TILE_PROGRESSIVE);
-
-uint8_t speed = 255;
-#define MATRIX_HEIGHT mh
-#define MATRIX_WIDTH mw
-
-int XY( int x, int y) 
-{
-	// For some reason, Y is reversed on my matrix, so fix this here.
-	return matrix->XY(x,MATRIX_HEIGHT-1-y);
-}
+#include "config.h"
 
 CRGB& setXY( int x, int y) 
 {
-	return leds[XY(x,y)];
+	return matrixleds[XY2(wrapX(x),y)];
 }
 
 void screenscale( accum88 hor, accum88 ver, fract8& pixel, fract8& up, fract8& right, fract8& diag) // 3 Pointers to resulting fract8 variables
@@ -97,11 +70,13 @@ class Dot {
 		fract8 p00, p01, p10, p11;		// percentage of pixel spread to adjacent pixels
     
 		screenscale( x, y, p00, p01, p10, p11);
-    
-		uint8_t x_pos = x >> 11;		// Scaling to get x and y pixel positions
-		uint8_t y_pos = y >> 11;
-    
-   
+
+		uint8_t x_pos = x >> 11;		// Scaling to get x pixel position 0 - 32
+		x_pos = map(x_pos, 0, 32, 0, MATRIX_WIDTH-1);	// Scale to Matrix width
+
+		uint8_t y_pos = y >> 10;		// Scaling to get y pixel position 0 - 64
+		y_pos = map(y_pos, 0, 64, 0, MATRIX_HEIGHT-1);	// Scale to Matrix height
+
 		if (yv > 0){				// In case of equal values, just adding 1 or 2 to any pixel's percentage
 			if (p00 == p01) p01++;		// will ensure than only one pixel will have a higher percentage than  
 			if (p10 == p11) p11++;		// any of the other 3
@@ -175,11 +150,12 @@ class Dot {
 	void GroundLaunch() {
 		gGravity = map8(speed, 0, 6)+3;
 
-		yv = ((20*(MATRIX_HEIGHT+(3*(gGravity*0.8))))-(MATRIX_HEIGHT*5)) + random16(MATRIX_HEIGHT*5);	// Vertical velocity = Minimum velocity + Random maximum difference
+		if (MATRIX_HEIGHT <= 32) yv = ((20*(MATRIX_HEIGHT+(3*(gGravity*0.8))))-(MATRIX_HEIGHT*5)) + random16(MATRIX_HEIGHT*5);	// Vertical velocity = Minimum velocity + Random maximum difference
+		if (MATRIX_HEIGHT > 32)  yv = ((14*(MATRIX_HEIGHT+(3*(gGravity*0.8))))-(MATRIX_HEIGHT*5)) + random16(MATRIX_HEIGHT*3);	// Vertical velocity = Minimum velocity + Random maximum difference
 		xv = random16(350) - 175;			// Generates a signed int value between +/- 175  (Nice width but always inside of frame)      
 		y = 0;						// Ground launch
 //		x = random16(); 				// Horizontal
-		x = random16(0x7000)+0x1000;			// Horizontal middle 7/8 of the matrix
+		x = random16(0x8000)+0x2000;			// Horizontal middle 7/8 of the matrix
 //		x = random16(0x4000)+0x2000;			// Horizontal middle 2/4 of the matrix
 //		x = 0x4000;					// Horizontal middle of the matrix
 		color.setRGB(24,24,24);				// Shells are white color' as a CRGB
@@ -199,27 +175,27 @@ class Dot {
 	}							// End of Skyburst function
 };								// End of Dot class definition
 
-#define MAX_SHELLS 8
-#define MIN_SHELLS 4
+#define MAX_SHELLS (MATRIX_HEIGHT/7)
+#define MIN_SHELLS (MATRIX_HEIGHT/9)
 #define MAX_SPARKS 40
-#define MIN_SPARKS 30
+#define MIN_SPARKS 20
 
 Dot gDot[MAX_SHELLS];					//Creates an object named gDot of type Dot class
 Dot gSparks[MAX_SHELLS][MAX_SPARKS];			//Creates an array object named gSparks of type Dot class
 
 void fireworks() 
 {
-	CRGB sky1(0,0,8);				// Background sky color (will only work if brightness is set high 128 or up !!)
-	CRGB sky2(8,8,8);				// Alternate sky color to create a star twinkle effect 
+	CRGB sky1(0,0,17);				// Background sky color (will only work if brightness is set high 128 or up !!)
+	CRGB sky2(32,32,64);				// Alternate sky color to create a star twinkle effect 
 
 	for( uint8_t h = 0; h < MATRIX_WIDTH; h++) {	// All leds will be set to 'sky1' (very dark blue) 
 		for( int v = 0; v < MATRIX_HEIGHT; v++) {
-			leds[XY(h,v)] = sky1;
+			matrixleds[XY2(h,v)] = sky1;
 		}
 	}
 
-	if( random8() < 32 ) {
-		leds[XY(random16(MATRIX_WIDTH),random16(MATRIX_HEIGHT))] = sky2;	// Around once each 8 frames, a random pixel is set to 'sky2' 
+	if( random8() < 48 ) {
+		matrixleds[XY2(random16(MATRIX_WIDTH),random16(MATRIX_HEIGHT))] = sky2;	// Around once each 8 frames, a random pixel is set to 'sky2' 
 	}
 
 	static uint8_t launchcountdown = 0;
@@ -283,9 +259,7 @@ void fireworks()
 void setup() {
   delay( 1000 ); //safety startup delay
   Serial.begin(115200);
-  //FastLED.addLeds<LED_TYPE,DATA_PIN,COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
-  FastLED.addLeds<WS2811_PORTA,3>(leds, 256).setCorrection(TypicalLEDStrip);
-  FastLED.setBrightness(BRIGHTNESS);
+  matrix_setup();
   matrix->begin();
 }
 
@@ -295,5 +269,4 @@ void loop()
   
   matrix->show();
 }
-
 
