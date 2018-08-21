@@ -19,7 +19,6 @@
 
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 
-uint8_t speed = 255;
 uint8_t intensity = 42;
 uint8_t gHue = 0; // rotating "base color" used by many of the patterns
 
@@ -72,25 +71,6 @@ uint8_t currentPaletteIndex = 0;
 uint_fast16_t tempMatrix[MATRIX_WIDTH+1][MATRIX_HEIGHT+1];
 // Temporary CRGB array for storing RGB data for one column to be duplicated.
 CRGB tempHeightStrip[MATRIX_HEIGHT];
-
-int wrapX(int x) { 
-	if (x < 0 ) return 0;
-	if (x >= MATRIX_WIDTH) return (MATRIX_WIDTH-1);
-	return x;
-}
-
-// wrap is for cylindrical arrays, which I don't use, so ignore it
-// For some reason, Y is reversed on my matrix, so fix this here.
-// Yeah, with default arguments, this should not be necessary, but I'm hitting
-// a compiler bug that prevents , bool wrap=false in the signature.
-int XY( int x, int y, bool wrap) { 
-	return matrix->XY(x,MATRIX_HEIGHT-1-y);
-}
-
-int XY( int x, int y) {
-	return matrix->XY(x,MATRIX_HEIGHT-1-y);
-}
-
 
 // based on FastLED example Fire2012WithPalette: https://github.com/FastLED/FastLED/blob/master/examples/Fire2012WithPalette/Fire2012WithPalette.ino
 void fire()
@@ -145,26 +125,26 @@ void fire()
 		// Step 4.  Map from heat cells to LED colors
 		for (int y = 0; y < MATRIX_HEIGHT; y++) {
 			// Blend new data with previous frame. Average data between neighbouring pixels
-			nblend(leds[XY(x,y)], ColorFromPalette(fire_p, ((tempMatrix[x][y]*0.7) + (tempMatrix[wrapX(x+1)][y]*0.3))), fireSmoothing);
+			nblend(leds[XY2(x,y)], ColorFromPalette(fire_p, ((tempMatrix[x][y]*0.7) + (tempMatrix[wrapX(x+1)][y]*0.3))), fireSmoothing);
 		}
 	}
 }
 
 void theMatrix()
 {
-	// ( Depth of dots, maximum brightness, frequency of new dots, length of tails, color, splashes, clouds )
+	// ( Depth of dots, maximum brightness, frequency of new dots, length of tails, color, splashes, clouds, ligthening )
 	rain(60, 200, map8(intensity,5,100), 195, CRGB::Green, false, false, false);
 }
 
 void coloredRain()
 {
-	// ( Depth of dots, maximum brightness, frequency of new dots, length of tails, color, splashes, clouds )
-	rain(60, 180, map8(intensity,2,60), 10, solidRainColor, true, false, false);
+	// ( Depth of dots, maximum brightness, frequency of new dots, length of tails, color, splashes, clouds, ligthening )
+	rain(60, 180, map8(intensity,2,60), 10, solidRainColor, true, true, false);
 }
 
 void stormyRain()
 {
-	// ( Depth of dots, maximum brightness, frequency of new dots, length of tails, color, splashes, clouds )
+	// ( Depth of dots, maximum brightness, frequency of new dots, length of tails, color, splashes, clouds, ligthening )
 	rain(0, 90, map8(intensity,0,150)+60, 10, solidRainColor, true, true, true);
 }
 
@@ -201,7 +181,7 @@ void rain(byte backgroundDepth, byte maxBrightness, byte spawnFreq, byte tailLen
 		// Step 3. Map from tempMatrix cells to LED colors
 		for (int y = 0; y < MATRIX_HEIGHT; y++) {
 			if (tempMatrix[x][y] >= backgroundDepth) {	// Don't write out empty cells
-				leds[XY(x,y)] = ColorFromPalette(rain_p, tempMatrix[x][y]);
+				leds[XY2(x,y)] = ColorFromPalette(rain_p, tempMatrix[x][y]);
 			}
 		}
 
@@ -213,46 +193,50 @@ void rain(byte backgroundDepth, byte maxBrightness, byte spawnFreq, byte tailLen
 			byte v = tempMatrix[x][0];
 
 			if (j >= backgroundDepth) {
-				leds[XY(x-2,0,true)] = ColorFromPalette(rain_p, j/3);
-				leds[XY(x+2,0,true)] = ColorFromPalette(rain_p, j/3);
+				leds[XY2(x-2,0,true)] = ColorFromPalette(rain_p, j/3);
+				leds[XY2(x+2,0,true)] = ColorFromPalette(rain_p, j/3);
 				splashArray[x] = 0; 	// Reset splash
 			}
 
 			if (v >= backgroundDepth) {
-				leds[XY(x-1,1,true)] = ColorFromPalette(rain_p, v/2);
-				leds[XY(x+1,1,true)] = ColorFromPalette(rain_p, v/2);
+				leds[XY2(x-1,1,true)] = ColorFromPalette(rain_p, v/2);
+				leds[XY2(x+1,1,true)] = ColorFromPalette(rain_p, v/2);
 				splashArray[x] = v;	// Prep splash for next frame
 			}
 		}
 
 		// Step 5. Add lightning if called for
+		#ifndef ESP32
 		if (storm) {
 			int lightning[MATRIX_WIDTH][MATRIX_HEIGHT];
 
 			if (random16() < 72) {		// Odds of a lightning bolt
-				lightning[scale8(random8(), MATRIX_WIDTH)][MATRIX_HEIGHT-1] = 255;	// Random starting location
+				lightning[scale8(random8(), MATRIX_WIDTH-1)][MATRIX_HEIGHT-1] = 255;	// Random starting location
 				for(int ly = MATRIX_HEIGHT-1; ly > 0; ly--) {
 					for (int lx = 0; lx < MATRIX_WIDTH; lx++) {
 						if (lightning[lx][ly] == 255) {
 							lightning[lx][ly] = 0;
+							// storm crashes here on ESP32. no idea why.
 							uint8_t dir = random8(4);
 							switch (dir) {
 								case 0:
-									leds[XY(lx+1,ly-1,true)] = lightningColor;
+									// storm also crashes here, again no idea why
+									leds[XY2(lx+1,ly-1,true)] = lightningColor;
+									// but not here
 									lightning[wrapX(lx+1)][ly-1] = 255;	// move down and right
 								break;
 								case 1:
-									leds[XY(lx,ly-1,true)] = CRGB(128,128,128);
+									leds[XY2(lx,ly-1,true)] = CRGB(128,128,128);
 									lightning[lx][ly-1] = 255;		// move down
 								break;
 								case 2:
-									leds[XY(lx-1,ly-1,true)] = CRGB(128,128,128);
+									leds[XY2(lx-1,ly-1,true)] = CRGB(128,128,128);
 									lightning[wrapX(lx-1)][ly-1] = 255;	// move down and left
 								break;
 								case 3:
-									leds[XY(lx-1,ly-1,true)] = CRGB(128,128,128);
+									leds[XY2(lx-1,ly-1,true)] = CRGB(128,128,128);
 									lightning[wrapX(lx-1)][ly-1] = 255;	// fork down and left
-									leds[XY(lx-1,ly-1,true)] = CRGB(128,128,128);
+									leds[XY2(lx-1,ly-1,true)] = CRGB(128,128,128);
 									lightning[wrapX(lx+1)][ly-1] = 255;	// fork down and right
 								break;
 							}
@@ -261,6 +245,7 @@ void rain(byte backgroundDepth, byte maxBrightness, byte spawnFreq, byte tailLen
 				}
 			}
 		}
+		#endif
 
 		// Step 6. Add clouds if called for
 		if (clouds) {
@@ -276,7 +261,7 @@ void rain(byte backgroundDepth, byte maxBrightness, byte spawnFreq, byte tailLen
 				uint8_t noiseData = qsub8(inoise8(noiseX + xoffset,noiseY + yoffset,noiseZ),16);
 				noiseData = qadd8(noiseData,scale8(noiseData,39));
 				noise[x][z] = scale8( noise[x][z], dataSmoothing) + scale8( noiseData, 256 - dataSmoothing);
-				nblend(leds[XY(x,MATRIX_HEIGHT-z-1)], ColorFromPalette(rainClouds_p, noise[x][z]), (cloudHeight-z)*(250/cloudHeight));
+				nblend(leds[XY2(x,MATRIX_HEIGHT-z-1)], ColorFromPalette(rainClouds_p, noise[x][z]), (cloudHeight-z)*(250/cloudHeight));
 			}
 			noiseZ ++;
 		}
@@ -298,9 +283,9 @@ void bpm()
 	for ( int r = 0; r < MATRIX_HEIGHT; r++) {
 		for (uint8_t i = 0; i < MATRIX_WIDTH; i++) {
 			#ifdef REVERSE_ORDER
-			leds[XY(i,MATRIX_HEIGHT-1-r)] = ColorFromPalette(palette, gHue + (r * 2), beat - gHue + (r * 10));
+			leds[XY2(i,MATRIX_HEIGHT-1-r)] = ColorFromPalette(palette, gHue + (r * 2), beat - gHue + (r * 10));
 			#else
-			leds[XY(i,r)] = ColorFromPalette(palette, gHue + (r * 2), beat - gHue + (r * 10));
+			leds[XY2(i,r)] = ColorFromPalette(palette, gHue + (r * 2), beat - gHue + (r * 10));
 			#endif
 		}
 	}
@@ -338,7 +323,7 @@ void juggle()
 	for ( int i = 0; i < numdots; i++) {
 		uint16_t pos_n = beatsin16(basebeat + i + numdots, 0, MATRIX_HEIGHT-1);
 		for (uint8_t c = 0; c < MATRIX_WIDTH; c++) {
-			leds[XY(c,pos_n)] += CHSV(gHue + curhue, thissat, thisbright);
+			leds[XY2(c,pos_n)] += CHSV(gHue + curhue, thissat, thisbright);
 		}
 		curhue += hueinc;
 	}
@@ -401,9 +386,9 @@ void colorwaves( CRGB* ledarray, uint16_t numleds, CRGBPalette16& palette)
 
 		for (uint8_t c = 0; c < MATRIX_WIDTH; c++) {
 			#ifdef REVERSE_ORDER
-			nblend( ledarray[XY(c,numleds-1-pixelnumber)], newcolor, 128);
+			nblend( ledarray[XY2(c,numleds-1-pixelnumber)], newcolor, 128);
 			#else
-			nblend( ledarray[XY(c,pixelnumber)], newcolor, 128);
+			nblend( ledarray[XY2(c,pixelnumber)], newcolor, 128);
 			#endif
 		}
 	}
@@ -453,7 +438,7 @@ void pride()
 		uint16_t pixelnumber = i;
 		#endif
 
-		nblend( leds[XY(pixelnumber/MATRIX_HEIGHT,pixelnumber%MATRIX_HEIGHT)], newcolor, 64);
+		nblend( leds[XY2(pixelnumber/MATRIX_HEIGHT,pixelnumber%MATRIX_HEIGHT)], newcolor, 64);
 	}
 }
 
@@ -464,9 +449,9 @@ void rainbow()
 	for (uint8_t x = 0; x < MATRIX_WIDTH; x++) {
 		for (int y = 0; y < MATRIX_HEIGHT; y++) {
 			#ifdef REVERSE_ORDER
-			leds[XY(x,y)] = tempHeightStrip[y];
+			leds[XY2(x,y)] = tempHeightStrip[y];
 			#else
-			leds[XY(x,y)] = tempHeightStrip[MATRIX_HEIGHT-1-y];
+			leds[XY2(x,y)] = tempHeightStrip[MATRIX_HEIGHT-1-y];
 			#endif
 		}
 	}
@@ -495,7 +480,7 @@ void sinelon()
 
 	for (uint8_t x = 0; x < MATRIX_WIDTH; x++) {
 		for (int y = 0; y < MATRIX_HEIGHT; y++) {
-			leds[XY(x,y)] = tempHeightStrip[y];
+			leds[XY2(x,y)] = tempHeightStrip[y];
 		}
 	}
 	prevpos = pos;
@@ -513,8 +498,9 @@ SimplePatternList gPatterns = { fire, theMatrix, coloredRain,  // 0-2
 };
 #endif
 // Only use patterns that work ok and look good
-SimplePatternList gPatterns = { pride, fire, theMatrix, coloredRain,  // 0-2
-				stormyRain, pride  // 3-4
+SimplePatternList gPatterns = { 
+				stormyRain, theMatrix, coloredRain,
+				pride, fire, 
 };
 
 // fire, theMatrix, stormyRrain, pride

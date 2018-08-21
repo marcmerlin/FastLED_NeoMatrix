@@ -4,7 +4,7 @@
 #ifdef ESP32
 // 64x64 matrix with optional 16 pin parallel driver
 // 55fps without 16PINS, 110fps with 16PINS
-//#define ESP32_16PINS
+#define ESP32_16PINS
 #elif ESP8266
 // ESP8266 shirt with neopixel strips
 #define M32B8X3
@@ -104,7 +104,7 @@ FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(matrixleds, MATRIX_TILE_WIDTH,
     NEO_TILE_TOP + NEO_TILE_LEFT +  NEO_TILE_PROGRESSIVE);
 
 uint8_t led_brightness = 64;
-uint8_t matrix_brightness = 16;
+uint8_t matrix_brightness = 64;
 
 #else // M32B8X3
 //---------------------------------------------------------------------------- 
@@ -139,17 +139,21 @@ uint8_t matrix_brightness = 64;
 
 #endif // M32B8X3
 
-int XY2( int x, int y, bool wrap=false) { 
-	return matrix->XY(x,MATRIX_HEIGHT-1-y);
-}
-
-uint16_t speed = 255;
-
 int wrapX(int x) { 
 	if (x < 0 ) return 0;
 	if (x >= MATRIX_WIDTH) return (MATRIX_WIDTH-1);
 	return x;
 }
+
+int XY2( int x, int y, bool wrap=false) { 
+	if (wrap) {
+		return matrix->XY(wrapX(x),MATRIX_HEIGHT-1-y);
+	} else {
+		return matrix->XY(x,MATRIX_HEIGHT-1-y);
+	}
+}
+
+uint16_t speed = 255;
 
 void matrix_clear() {
     //FastLED[1].clearLedData();
