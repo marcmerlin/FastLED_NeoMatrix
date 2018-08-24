@@ -5,14 +5,13 @@
 //#define P32BY8X4
 #define DISABLE_WHITE
 // Use serialized output instead of parallel output
-//#define SERIAL_OUTPUT
+#define ESP32_16PINS
 #define P64BY64
-//#define P32BY64
 
-#if defined(P32BY64) || defined(P64BY64)
+#ifdef ESP32_16PINS
 #define FASTLED_ALLOW_INTERRUPTS 0
 #define FASTLED_SHOW_CORE 0
-#endif
+#endif // ESP32_16PINS
 
 #include <Adafruit_GFX.h>
 #include <FastLED_NeoMatrix.h>
@@ -31,7 +30,9 @@
 // Allow temporaly dithering, does not work with ESP32 right now
 #ifndef ESP32
 #define delay FastLED.delay
-#else
+#endif
+
+#ifdef ESP32_16PINS
 FASTLED_USING_NAMESPACE
 // -- Task handles for use in the notifications
 static TaskHandle_t FastLEDshowTaskHandle = 0;
@@ -69,7 +70,7 @@ void FastLEDshowTask(void *pvParameters)
 	xTaskNotifyGive(userTaskHandle);
     }
 }
-#endif
+#endif // ESP32_16PINS
 
 #if defined(ESP32) or defined(ESP8266)
 #define PIN 5
@@ -140,19 +141,6 @@ FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(leds, mw, mh,
   NEO_MATRIX_BOTTOM     + NEO_MATRIX_LEFT +
     NEO_MATRIX_COLUMNS + NEO_MATRIX_ZIGZAG);
 
-#elif defined(P32BY64)
-#define NUM_STRIPS 8
-#define NUM_LEDS_PER_STRIP 256
-// Define full matrix width and height.
-#define mw 32
-#define mh 64
-#define NUMMATRIX (mw*mh)
-CRGB leds[NUMMATRIX];
-// Define matrix width and height.
-FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(leds, mw, mh, 
-  NEO_MATRIX_BOTTOM + NEO_MATRIX_LEFT +
-    NEO_MATRIX_COLUMNS + NEO_MATRIX_ZIGZAG);
-
 #elif defined(P32BY8X4)
 // Define full matrix width and height.
 #define mw 32
@@ -197,10 +185,10 @@ FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(leds, mw, mh,
 #endif
 
 void matrix_show() {
-#ifdef SERIAL_OUTPUT
-    matrix->show();
-#else
+#ifdef ESP32_16PINS
     FastLEDshowESP32();
+#else
+    matrix->show();
 #endif
 }
 
@@ -832,8 +820,8 @@ void loop() {
 }
 
 void setup() {
-#if defined(P32BY64) || defined(P64BY64)
-    #ifdef SERIAL_OUTPUT
+#if defined(P64BY64)
+    #ifndef ESP32_16PINS
 	// https://github.com/FastLED/FastLED/wiki/Multiple-Controller-Examples
 	FastLED.addLeds<WS2812B, 2, GRB>(leds, 0*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
 	FastLED.addLeds<WS2812B, 4, GRB>(leds, 1*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
@@ -851,7 +839,7 @@ void setup() {
 	FastLED.addLeds<WS2812B,25, GRB>(leds,13*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
 	FastLED.addLeds<WS2812B,26, GRB>(leds,14*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
 	FastLED.addLeds<WS2812B,27, GRB>(leds,15*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
-    #else
+    #else // ESP32_16PINS
 	xTaskCreatePinnedToCore(FastLEDshowTask, "FastLEDshowTask", 2048, NULL, 2, &FastLEDshowTaskHandle, FASTLED_SHOW_CORE);
 	// hardcoded out put for pins 0,2,3 (RX),4,5,12-19,21,22,23
 	// 16 17 18 19 21 22 23 24
@@ -866,8 +854,8 @@ void setup() {
 	// good FastLED.addLeds<WS2812B_PORTA,NUM_STRIPS,((1<<16) + (1<<2) + (1<<4) + (1<<5) + (1<<17) + (1<<13) + (1<<19) + (1<<15))>(leds, NUM_LEDS_PER_STRIP); 
 	//FastLED.addLeds<WS2812B_PORTA,NUM_STRIPS,((1<<2) + (1<<4) + (1<<5) + (1<<13)+ (1<<15) + (1<<16) + (1<<17) + (1<<18) )>(leds, NUM_LEDS_PER_STRIP); 
 	//FastLED.addLeds<WS2811_PORTA,NUM_STRIPS,((1<<2) + (1<<4) + (1<<5) + (1<<12)+ (1<<13) + (1<<14) + (1<<15) + (1<<16) )>(leds, NUM_LEDS_PER_STRIP); 
-	FastLED.addLeds<WS2811_PORTA,NUM_STRIPS,((1<<2) + (1<<4) + (1<<5) + (1<<12)+ (1<<13) + (1<<14) + (1<<15) + (1<<16) + (1<<18) + (1<<19) + (1<<21) + (1<<22) + (1<<23) + (1<<25) + (1<<26) + (1<<27)  )>(leds, NUM_LEDS_PER_STRIP); 
-    #endif
+	FastLED.addLeds<WS2811_PORTA,NUM_STRIPS,((1<<2) + (1<<4) + (1<<5) + (1<<12)+ (1<<13) + (1<<14) + (1<<15) + (1<<16) + (1<<18) + (1<<19) + (1<<21) + (1<<22) + (1<<23) + (1<<25) + (1<<26) + (1<<27) )>(leds, NUM_LEDS_PER_STRIP); 
+    #endif // ESP32_16PINS
 #elif defined(P32BY8X3)
     // Parallel output
     FastLED.addLeds<WS2811_PORTA,3>(leds, NUMMATRIX/3).setCorrection(TypicalLEDStrip);
