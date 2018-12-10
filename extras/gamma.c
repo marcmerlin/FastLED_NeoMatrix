@@ -1,3 +1,4 @@
+#ifndef ARDUINO
 // THIS IS NOT ARDUINO CODE -- DON'T INCLUDE IN YOUR SKETCH.  It's a
 // command-line tool that outputs a gamma correction table to stdout;
 // redirect or copy and paste the results into header file for the
@@ -49,3 +50,5 @@ int main(int argc, char *argv[])
 
 	return 0;
 }
+
+#endif /* !ARDUINO */
