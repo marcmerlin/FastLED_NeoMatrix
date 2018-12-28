@@ -1,5 +1,5 @@
-FastLED NeoMatrix
-=================
+FastLED NeoMatrix: Matrix with FastLED using Adafruit::GFX API
+==============================================================
 
 Adafruit_GFX-compatible library for NeoPixel matrices and grids. Controls single and tiled NeoPixel displays.
 This library requires FastLED and Adafruit_GFX libraries.
