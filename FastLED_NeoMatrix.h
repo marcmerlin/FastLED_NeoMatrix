@@ -79,6 +79,7 @@
  * and pain due to the unfortunate use of templates in FastLED, preventing
  * passing initalization arguments in the object since they need to be
  * hardcoded at compile time as template values :( -- merlin
+ * See https://github.com/marcmerlin/FastLED_NeoMatrix/blob/cd739d471bbbe22336f281f1d1988aa7e7572340/FastLED_NeoMatrix.cpp#L92
  */
 class FastLED_NeoMatrix : public Adafruit_GFX {
 
