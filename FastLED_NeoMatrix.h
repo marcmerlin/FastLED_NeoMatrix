@@ -101,7 +101,10 @@ class FastLED_NeoMatrix : public Adafruit_GFX {
   int XY(int16_t x, int16_t y); // compat with FastLED code, returns 1D offset
   void
     drawPixel(int16_t x, int16_t y, uint16_t color),
+    drawPixel(int16_t x, int16_t y, uint32_t color),
+    drawPixel(int16_t x, int16_t y, CRGB color),
     fillScreen(uint16_t color),
+    setPassThruColor(CRGB c),
     setPassThruColor(uint32_t c),
     setPassThruColor(void),
     setRemapFunction(uint16_t (*fn)(uint16_t, uint16_t)),
@@ -110,7 +113,7 @@ class FastLED_NeoMatrix : public Adafruit_GFX {
   static uint16_t
     Color(uint8_t r, uint8_t g, uint8_t b);
 
-  void clear() { FastLED.clear(); };
+  void clear() { fillScreen(0); };
   void setBrightness(int b) { FastLED.setBrightness(b); };
 
   void show() {

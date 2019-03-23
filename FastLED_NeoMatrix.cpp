@@ -106,6 +106,11 @@ uint16_t FastLED_NeoMatrix::Color(uint8_t r, uint8_t g, uint8_t b) {
 // it (call with no value)!
 
 // Pass raw color value to set/enable passthrough
+void FastLED_NeoMatrix::setPassThruColor(CRGB c) {
+  passThruColor = c.r*65536+c.g*256+c.b;
+  passThruFlag  = true;
+}
+
 void FastLED_NeoMatrix::setPassThruColor(uint32_t c) {
   passThruColor = c;
   passThruFlag  = true;
@@ -228,6 +233,20 @@ void FastLED_NeoMatrix::drawPixel(int16_t x, int16_t y, uint16_t color) {
   if((x < 0) || (y < 0) || (x >= _width) || (y >= _height)) return;
 
   _leds[XY(x,y)] = passThruFlag ? passThruColor : expandColor(color);
+}
+
+void FastLED_NeoMatrix::drawPixel(int16_t x, int16_t y, uint32_t color) {
+
+  if((x < 0) || (y < 0) || (x >= _width) || (y >= _height)) return;
+
+  _leds[XY(x,y)] = color;
+}
+
+void FastLED_NeoMatrix::drawPixel(int16_t x, int16_t y, CRGB c) {
+
+  if((x < 0) || (y < 0) || (x >= _width) || (y >= _height)) return;
+
+  _leds[XY(x,y)] = c.r*65536+c.g*256+c.b;
 }
 
 void FastLED_NeoMatrix::fillScreen(uint16_t color) {

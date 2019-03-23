@@ -145,6 +145,7 @@ int wrapX(int x) {
 	return x;
 }
 
+// Like XY, but for a mirror image from the top (used by misconfigured code)
 int XY2( int x, int y, bool wrap=false) { 
 	if (wrap) {
 		return matrix->XY(wrapX(x),MATRIX_HEIGHT-1-y);
