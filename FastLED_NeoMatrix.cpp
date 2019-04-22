@@ -3,6 +3,7 @@
   by Marc MERLIN <marc_soft@merlins.org>
 
   Original notice and license from Adafruit_Neomatrix:
+  ------------------------------------------------------------------------
   Arduino library to control single and tiled matrices of WS2811- and
   WS2812-based RGB LED devices such as the Adafruit NeoPixel Shield or
   displays assembled from NeoPixel strips, making them compatible with
@@ -35,7 +36,6 @@
 
 #include <Adafruit_GFX.h>
 #include <FastLED_NeoMatrix.h>
-#include <FastLED.h>
 #include "gamma.h"
 #ifdef __AVR__
  #include <avr/pgmspace.h>
@@ -260,6 +260,8 @@ void FastLED_NeoMatrix::setRemapFunction(uint16_t (*fn)(uint16_t, uint16_t)) {
   remapFn = fn;
 }
 
+// After setting gamma, this is used with
+//  CRGB color = CRGB(matrix->gamma[red], matrix->gamma[green], matrix->gamma[blue]);
 void FastLED_NeoMatrix::precal_gamma(float gam) {
   for (uint8_t i =0; i<255; i++) {
     gamma[i] = applyGamma_video(i, gam);
