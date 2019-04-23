@@ -69,38 +69,6 @@ void display_resolution() {
     matrix->show();
 }
 
-#if 0
-/gifs/ChasmDaltynBg.gif, size: 13920
-/gifs/ChasmDaltynChest.gif, size: 40786
-/gifs/ChasmDaltynCrouch.gif, size: 23545
-/gifs/ChasmDaltynFight.gif, size: 23167
-/gifs/ChasmDaltynKnife.gif, size: 12091
-/gifs/ChasmDaltynPunch.gif, size: 13550
-/gifs/ChasmDaltynRun.gif, size: 114519
-/gifs/ChasmDaltynShield.gif, size: 26480
-/gifs/ChasmDaltynSlash.gif, size: 15036
-/gifs/ChasmDaltynSword.gif, size: 13488
-/gifs/ChasmDaltynWhip.gif, size: 10938
-/gifs/ChasmGoblin.gif, size: 20530
-/gifs/ChasmMonster1.gif, size: 6325
-/gifs/ChasmMonster2.gif, size: 7917
-/gifs/ChasmMonster3.gif, size: 9606
-/gifs/ChasmOldMan.gif, size: 9969
-/gifs/DinoRun1.gif, size: 1918
-/gifs/DinoRun10.gif, size: 2045
-/gifs/DinoRun11.gif, size: 1844
-/gifs/DinoRun2.gif, size: 3232
-/gifs/DinoRun3.gif, size: 3119
-/gifs/DinoRun6.gif, size: 2898
-/gifs/DinoRun7-2.gif, size: 2207
-/gifs/DinoRun7.gif, size: 1686
-/gifs/DinoRun9-1.gif, size: 1991
-/gifs/DinoRun9-2.gif, size: 2201
-/gifs/DinoRun9-3.gif, size: 1474
-/gifs/DinoRun9-4.gif, size: 1681
-/gifs/TinyFlex.gif, size: 2034
-#endif
-
 
 void loop() {
     Dir dir = SPIFFS.openDir("/");
@@ -108,7 +76,6 @@ void loop() {
 	uint32_t result;
 
 	String fileName = dir.fileName();
-	//fileName = "/gifs/DinoRun2.gif";
 	//fileName = "/gifs/32anim_balls.gif";
 	//fileName = "/gifs/32anim_dance.gif";
 	//fileName = "/gifs/32anim_flower.gif";
