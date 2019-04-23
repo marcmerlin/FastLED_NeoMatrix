@@ -6,6 +6,8 @@ Please go to
 
 for a better/newer version of this code.
 
+You may however like this version if you really want a bare bones gif decoder.
+
 
 Original Text
 -------------

@@ -20,7 +20,7 @@ void display_resolution() {
     matrix->setTextSize(1);
     // not wide enough;
     if (mw<16) return;
-    matrix_clear();
+    matrix->clear();
     // Font is 5x7, if display is too small
     // 8 can only display 1 char
     // 16 can almost display 3 chars
@@ -41,8 +41,8 @@ void display_resolution() {
 	} else {
 	    // we're not tall enough either, so we wait and display
 	    // the 2nd value on top.
-	    matrix_show();
-	    matrix_clear();
+	    matrix->show();
+	    matrix->clear();
 	    matrix->setCursor(mw-11, 0);
 	}   
     }
@@ -66,7 +66,7 @@ void display_resolution() {
 	matrix->print("*");
     }
     
-    matrix_show();
+    matrix->show();
 }
 
 #if 0
@@ -132,14 +132,14 @@ void loop() {
 	      return;
 	    }
 
-	    matrix_clear();
+	    matrix->clear();
 	    gifPlayer.parseLogicalScreenDescriptor();
 	    gifPlayer.parseGlobalColorTable();
 	    Serial.println("Processing gif");
 	    do {
 		gifPlayer.drawFrame();
 		result = gifPlayer.drawFrame();
-		matrix_show();
+		matrix->show();
 		delay(50);
 	    } while (result != ERROR_FINISHED);
 	    imageFile.seek(0);

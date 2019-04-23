@@ -32,35 +32,4 @@ FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(matrixleds, MATRIX_TILE_WIDTH,
 
 uint8_t matrix_brightness = 32;
 
-uint16_t XY( uint8_t x, uint8_t y) {
-    return matrix->XY(x,y);
-}
-
-void matrix_clear() {
-    //FastLED[1].clearLedData();
-    // clear does not work properly with multiple matrices connected via parallel inputs
-    memset(matrixleds, 0, NUMMATRIX*3);
-}
-
-void matrix_show() {
-#if 0
-#ifdef ESP8266
-// Disable watchdog interrupt so that it does not trigger in the middle of
-// updates. and break timing of pixels, causing random corruption on interval
-// https://github.com/esp8266/Arduino/issues/34
-// Note that with https://github.com/FastLED/FastLED/pull/596 interrupts, even
-// in parallel mode, should not affect output. That said, reducing their amount
-// is still good.
-// Well, that sure didn't work, it actually made things worse in a demo during
-// fade, so I'm turning it off again.
-    //ESP.wdtDisable();
-#endif
-    FastLED[0].showLeds(matrix_brightness);
-#ifdef ESP8266
-    //ESP.wdtEnable(1000);
-#endif
-#endif
-    matrix->show();
-}
-
 #endif

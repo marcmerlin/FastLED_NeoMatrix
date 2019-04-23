@@ -393,7 +393,7 @@ class GifPlayer {
       // Don't clear matrix screen for these disposal methods
       if ((prevDisposalMethod != DISPOSAL_NONE) && (prevDisposalMethod != DISPOSAL_LEAVE)) {
         //backgroundLayer.fillScreen({ 0, 0, 0 });
-	matrix_clear();
+	matrix->clear();
       }
 
       // Process previous disposal method
