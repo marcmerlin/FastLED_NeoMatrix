@@ -4,11 +4,13 @@ FastLED NeoMatrix: Matrix with FastLED using Adafruit::GFX API
 Adafruit_GFX-compatible library for NeoPixel matrices and grids. Controls single and tiled NeoPixel displays.
 This library requires FastLED and Adafruit_GFX libraries.
 
-Please see https://learn.adafruit.com/adafruit-neopixel-uberguide/neomatrix-library for how to use this library.
+Please see https://learn.adafruit.com/adafruit-neopixel-uberguide/neomatrix-library for how to use this library as well as https://learn.adafruit.com/adafruit-gfx-graphics-library/graphics-primitives
 
 Example demo code: https://github.com/marcmerlin/FastLED_NeoMatrix/blob/master/examples/MatrixGFXDemo/MatrixGFXDemo.ino
 
-More complex example demo code: https://github.com/marcmerlin/NeoMatrix-FastLED-IR
+You can find a lot of demo code here:
+https://github.com/marcmerlin/FastLED_NeoMatrix_SmartMatrix_LEDMatrix_GFX_Demos as well as
+a big integrated demo here: https://github.com/marcmerlin/NeoMatrix-FastLED-IR
 
 This code was taken from Adafruit_NeoMatrix and adapted to work with the more powerful FastLED library.
 The reasons for using FastLED instead of Adafruit::Neopixel as a backend, include:
