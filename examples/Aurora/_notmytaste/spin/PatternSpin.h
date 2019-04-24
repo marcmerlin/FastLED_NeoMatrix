@@ -1,1 +1,0 @@
-../PatternSpin.h

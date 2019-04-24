@@ -1,1 +1,0 @@
-../PatternSwirl.h

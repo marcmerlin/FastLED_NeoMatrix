@@ -1,5 +1,0 @@
-Matrix Demos here do not actually use Adafruit::GFX's primitives, but may use
-NeoMatrix's X/Y mapping function and then address the led array directly.
-This code is therefore only compatible with a FastLED backend.
-I've included it because I found some cool demos that I adapted to run
-with my hardware.

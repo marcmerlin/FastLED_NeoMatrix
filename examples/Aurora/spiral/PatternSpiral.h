@@ -1,1 +1,0 @@
-../PatternSpiral.h

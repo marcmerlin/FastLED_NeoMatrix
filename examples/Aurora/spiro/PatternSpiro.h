@@ -1,1 +1,0 @@
-../PatternSpiro.h
