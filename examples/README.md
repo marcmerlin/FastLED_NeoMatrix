@@ -8,5 +8,5 @@ about the combined neomatrix_config.h backend.
 
 Other examples under FastLED_NeoMatrix_SmartMatrix_LEDMatrix_GFX_Demos use the
 complex looking neomatrix_config.h that allows to move your code back and forth
-between the different drivers that use the Framebuffer_GFX backend (like the
-FastLED::NeoMatrix, SmartMatrix::GFX, and FastLED_SPITFT_GFX drivers)
+between the different drivers that use the Framebuffer::GFX backend (like the
+FastLED::NeoMatrix, SmartMatrix::GFX, and FastLED_SPITFT::GFX drivers)
