@@ -1,16 +1,24 @@
 FastLED NeoMatrix: Matrix with FastLED using Adafruit::GFX API
 ==============================================================
 
-Adafruit_GFX-compatible library for NeoPixel matrices and grids. Controls single and tiled NeoPixel displays.
-This library requires FastLED and Adafruit_GFX libraries.
+Blog post with details and pictures:
+http://marc.merlins.org/perso/arduino/post_2018-04-23_FastLED_NeoMatrix-library_-how-to-do-Matrices-with-FastLED-and-Adafruit_GFX.html
 
-Please see https://learn.adafruit.com/adafruit-neopixel-uberguide/neomatrix-library for how to use this library as well as https://learn.adafruit.com/adafruit-gfx-graphics-library/graphics-primitives
-
-Example demo code: https://github.com/marcmerlin/FastLED_NeoMatrix/blob/master/examples/MatrixGFXDemo/MatrixGFXDemo.ino
+Adafruit_GFX and FastLED-compatible library for NeoPixel matrices and grids. Controls single and tiled NeoPixel displays.  
+This library requires FastLED and Adafruit_GFX libraries as well as this base class library:
+- https://github.com/marcmerlin/Framebuffer_GFX
+Please look at the Framebuffer_GFX page for details on how the APIs work and you can also look the example demo code:
+- https://github.com/marcmerlin/FastLED_NeoMatrix/blob/master/examples/MatrixGFXDemo/MatrixGFXDemo.ino
 
 You can find a lot of demo code here:
 https://github.com/marcmerlin/FastLED_NeoMatrix_SmartMatrix_LEDMatrix_GFX_Demos as well as
 a big integrated demo here: https://github.com/marcmerlin/NeoMatrix-FastLED-IR
+
+This library requires:
+- https://github.com/marcmerlin/Framebuffer_GFX (base class)
+- https://github.com/adafruit/Adafruit-GFX-Library
+- https://github.com/FastLED/FastLED  
+- https://github.com/marcmerlin/LEDMatrix is optional if you have code that uses that API
 
 This code was taken from Adafruit_NeoMatrix and adapted to work with the more powerful FastLED library.
 The reasons for using FastLED instead of Adafruit::Neopixel as a backend, include:
