@@ -28,6 +28,11 @@ The reasons for using FastLED instead of Adafruit::Neopixel as a backend, includ
 * Support for interrupts to allow things like Infrared to work while updating strips
 * Support for many more led/pixel hardware: https://github.com/FastLED/FastLED/wiki/Chipset-reference
 
+### Tiled Matrixes, Zig-Zag and so forth
+
+See Adafruit's NeoMatrix description, which this lib is fully compatible, with: https://learn.adafruit.com/adafruit-neopixel-uberguide/neomatrix-library
+![image](https://user-images.githubusercontent.com/1369412/74280192-202e4300-4cd1-11ea-945c-a06dbdcecb96.png)
+
 ### Custom Mappings (non rectangular array)
 
 If you have a custom made design where the pixels are not in a rectangular pattern, you need to provide a myRemapFn which is then fed to the matrix with "matrix->setRemapFunction(myRemapFn)"  
