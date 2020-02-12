@@ -1,6 +1,15 @@
 FastLED NeoMatrix: Matrix with FastLED using Adafruit::GFX API
 ==============================================================
 
+Blog post with details and pictures:
+http://marc.merlins.org/perso/arduino/post_2018-04-23_FastLED_NeoMatrix-library_-how-to-do-Matrices-with-FastLED-and-Adafruit_GFX.html
+
+Adafruit_GFX and FastLED-compatible library for NeoPixel matrices and grids. Controls single and tiled NeoPixel displays.  
+This library requires FastLED and Adafruit_GFX libraries as well as this base class library:
+- https://github.com/marcmerlin/Framebuffer_GFX
+Please look at the Framebuffer_GFX page for details on how the APIs work and you can also look the example demo code:
+- https://github.com/marcmerlin/FastLED_NeoMatrix/blob/master/examples/MatrixGFXDemo/MatrixGFXDemo.ino
+
 ### Adafruit::NeoMatrix vs FastLED::NeoMatrix
 
 This code was taken from Adafruit_NeoMatrix and adapted to work with the more powerful FastLED library.
@@ -16,16 +25,6 @@ How to use the API? It's very close to Adafruit_NeoMatrix, to see an example, yo
 https://github.com/adafruit/Adafruit_NeoMatrix/blob/master/examples/MatrixGFXDemo/MatrixGFXDemo.ino
 with  
 https://github.com/marcmerlin/FastLED_NeoMatrix/blob/master/examples/MatrixGFXDemo/MatrixGFXDemo.ino
-
-
-Blog post with details and pictures:
-http://marc.merlins.org/perso/arduino/post_2018-04-23_FastLED_NeoMatrix-library_-how-to-do-Matrices-with-FastLED-and-Adafruit_GFX.html
-
-Adafruit_GFX and FastLED-compatible library for NeoPixel matrices and grids. Controls single and tiled NeoPixel displays.  
-This library requires FastLED and Adafruit_GFX libraries as well as this base class library:
-- https://github.com/marcmerlin/Framebuffer_GFX
-Please look at the Framebuffer_GFX page for details on how the APIs work and you can also look the example demo code:
-- https://github.com/marcmerlin/FastLED_NeoMatrix/blob/master/examples/MatrixGFXDemo/MatrixGFXDemo.ino
 
 You can find a lot of demo code here:
 https://github.com/marcmerlin/FastLED_NeoMatrix_SmartMatrix_LEDMatrix_GFX_Demos as well as
