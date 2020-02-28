@@ -87,7 +87,7 @@ void count_pixels() {
     matrix_clear();
     for (uint16_t i=0; i<mh; i++) {
 	for (uint16_t j=0; j<mw; j++) {
-	    matrix->drawPixel(j, i, i%3==0?LED_BLUE_HIGH:i%3==1?LED_RED_HIGH:LED_GREEN_HIGH);
+	    matrix->drawPixel(j, i, i%3==0?(uint16_t)LED_BLUE_HIGH:i%3==1?(uint16_t)LED_RED_HIGH:(uint16_t)LED_GREEN_HIGH);
 	    // depending on the matrix size, it's too slow to display each pixel, so
 	    // make the scan init faster. This will however be too fast on a small matrix.
 	    #ifdef ESP8266
