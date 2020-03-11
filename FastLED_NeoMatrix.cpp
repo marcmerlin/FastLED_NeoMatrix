@@ -38,7 +38,7 @@
 #include <FastLED_NeoMatrix.h>
 
 // Constructor for single matrix:
-FastLED_NeoMatrix::FastLED_NeoMatrix(CRGB *leds, uint8_t w, uint8_t h, uint8_t matrixType): 
+FastLED_NeoMatrix::FastLED_NeoMatrix(CRGB *leds, uint16_t w, uint16_t h, uint8_t matrixType): 
   Framebuffer_GFX(leds, w, h, NULL) {
     type = matrixType;
     tilesX = 0;
@@ -46,7 +46,7 @@ FastLED_NeoMatrix::FastLED_NeoMatrix(CRGB *leds, uint8_t w, uint8_t h, uint8_t m
   }
 
 // Constructor for tiled matrices:
-FastLED_NeoMatrix::FastLED_NeoMatrix(CRGB *leds, uint8_t mW, uint8_t mH, 
+FastLED_NeoMatrix::FastLED_NeoMatrix(CRGB *leds, uint16_t mW, uint16_t mH, 
     uint8_t tX, uint8_t tY, uint8_t matrixType) :
   Framebuffer_GFX(leds, mW * tX, mH * tY, NULL) {
     matrixWidth = mW;
