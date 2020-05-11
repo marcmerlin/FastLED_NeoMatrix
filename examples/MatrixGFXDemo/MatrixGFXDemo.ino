@@ -323,7 +323,9 @@ static const uint16_t PROGMEM
 
 // Convert a BGR 4/4/4 bitmap to RGB 5/6/5 used by Adafruit_GFX
 void fixdrawRGBBitmap(int16_t x, int16_t y, const uint16_t *bitmap, int16_t w, int16_t h) {
-    uint16_t RGB_bmp_fixed[w * h];
+    // work around "a15 cannot be used in asm here" compiler bug when using an array on ESP8266
+    // uint16_t RGB_bmp_fixed[w * h];
+    static uint16_t *RGB_bmp_fixed = (uint16_t *) malloc( w*h*2);
     for (uint16_t pixel=0; pixel<w*h; pixel++) {
 	uint8_t r,g,b;
 	uint16_t color = pgm_read_word(bitmap + pixel);
