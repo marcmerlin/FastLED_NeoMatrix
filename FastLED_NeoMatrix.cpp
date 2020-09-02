@@ -57,6 +57,7 @@ FastLED_NeoMatrix::FastLED_NeoMatrix(CRGB *leds, uint16_t mW, uint16_t mH,
 }
 
 void FastLED_NeoMatrix::show() {
+  Framebuffer_GFX::showfps();
   if (_show) { _show(); return; };
   #ifdef ESP8266
 // Disable watchdog interrupt so that it does not trigger in the middle of
