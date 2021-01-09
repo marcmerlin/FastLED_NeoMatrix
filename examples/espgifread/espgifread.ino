@@ -11,9 +11,8 @@ GifPlayer gifPlayer;
 extern "C" {
 #include "user_interface.h"
 }
-#elif defined(ESP32)
 #else
-#error This code uses SPIFFS on ESPxx chips
+#error "This code uses SPIFFS on ESP8266 chips, for a version compatible with ESP32, see https://github.com/marcmerlin/AnimatedGifs"
 #endif
 
 
