@@ -7,10 +7,11 @@
 #include "GifPlayer.h"
 GifPlayer gifPlayer;
 
-#if defined(ESP8266) || defined(ESP32)
+#if defined(ESP8266)
 extern "C" {
 #include "user_interface.h"
 }
+#elif defined(ESP32)
 #else
 #error This code uses SPIFFS on ESPxx chips
 #endif
